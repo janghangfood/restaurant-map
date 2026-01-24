@@ -1,0 +1,153 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>장항지구 맛집지도</title>
+
+<!-- ✅ 네이버 지도 SDK -->
+<script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=g7937mmgwu"></script>
+
+<style>
+html, body { margin:0; padding:0; height:100%; font-family: -apple-system, BlinkMacSystemFont, 'Noto Sans KR'; }
+#map { width:100%; height:100%; }
+
+.sheet {
+  position: fixed;
+  left:0; right:0; bottom:0;
+  background:#fff;
+  border-radius:16px 16px 0 0;
+  box-shadow:0 -6px 20px rgba(0,0,0,.2);
+  padding:16px;
+  display:none;
+  z-index:1000;
+}
+.sheet.show { display:block; }
+.title { font-weight:700; font-size:16px; }
+.addr { font-size:13px; color:#555; margin-top:4px; }
+.btn {
+  margin-top:12px;
+  padding:12px;
+  background:#03c75a;
+  color:#fff;
+  text-align:center;
+  border-radius:10px;
+  font-weight:600;
+  cursor:pointer;
+}
+.close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  font-size: 20px;
+  color: #999;
+}
+</style>
+</head>
+
+<body>
+<div id="map"></div>
+
+<div id="sheet" class="sheet">
+  <span class="close-btn" onclick="closeSheet()">×</span>
+  <div class="title" id="sName"></div>
+  <div class="addr" id="sAddr"></div>
+  <div class="btn" onclick="openNaverMap()">네이버지도에서 보기</div>
+</div>
+
+<script>
+/******** 설정 ********/
+// Apps Script API URL
+const API_URL = "https://script.google.com/macros/s/AKfycbxRhXGNOU0pDv1aLXHB_yvDgtCkQhw_-cnNM5vX1eMBi_3XPw-KEZ1xXWH9K327Jlizyg/exec";
+/************************/
+
+let selected = null;
+
+const map = new naver.maps.Map('map', {
+  center: new naver.maps.LatLng(37.661, 126.764),
+  zoom: 14
+});
+
+// 승인 맛집 불러오기
+fetch(API_URL + '?action=list')
+  .then(r => r.json())
+  .then(json => {
+    if (!json.ok) {
+      console.error('데이터 로드 실패');
+      return;
+    }
+
+    console.log('맛집 데이터:', json.data);
+
+    json.data.forEach(item => {
+      const marker = new naver.maps.Marker({
+        position: new naver.maps.LatLng(item.lat, item.lng),
+        map
+      });
+
+      naver.maps.Event.addListener(marker, 'click', () => {
+        selected = item;
+        showSheet(item);
+      });
+    });
+  })
+  .catch(err => console.error('Fetch 에러:', err));
+
+function showSheet(item) {
+  document.getElementById('sName').textContent = item.name;
+  document.getElementById('sAddr').textContent = item.address || '';
+  document.getElementById('sheet').classList.add('show');
+}
+
+function closeSheet() {
+  document.getElementById('sheet').classList.remove('show');
+}
+
+// 네이버지도 앱/웹 이동
+function openNaverMap() {
+  if (!selected) return;
+
+  const name = encodeURIComponent(selected.name);
+  const lat = selected.lat;
+  const lng = selected.lng;
+  const appname = encodeURIComponent('장항지구맛집');
+
+  const ua = navigator.userAgent.toLowerCase();
+  let targetUrl = '';
+
+  if (ua.indexOf('android') > -1) {
+    targetUrl = 'intent://place?lat=' + lat +
+      '&lng=' + lng +
+      '&name=' + name +
+      '&appname=' + appname +
+      '#Intent;scheme=nmap;package=com.nhn.android.nmap;end';
+    
+    window.open(targetUrl, '_blank');
+    
+  } else if (/iphone|ipad/.test(ua)) {
+    const link = document.createElement('a');
+    link.href = 'nmap://place?lat=' + lat +
+      '&lng=' + lng +
+      '&name=' + name +
+      '&appname=' + appname;
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+  } else {
+    targetUrl = 'https://map.naver.com/v5/search/' + name;
+    window.open(targetUrl, '_blank');
+  }
+}
+
+// 지도 외부 클릭 시 바텀시트 닫기
+map.addListener('click', () => {
+  closeSheet();
+});
+</script>
+</body>
+</html>
