@@ -65,14 +65,28 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxRhXGNOU0pDv1aLXHB_yvD
 /************************/
 
 let selected = null;
+let map = null;
 
-const map = new naver.maps.Map('map', {
-  center: new naver.maps.LatLng(37.661, 126.764),
-  zoom: 14
-});
+// 네이버 지도 SDK 로드 확인 후 초기화
+function initMap() {
+  if (typeof naver === 'undefined' || typeof naver.maps === 'undefined') {
+    console.error('네이버 지도 SDK 로드 실패');
+    setTimeout(initMap, 100); // 0.1초 후 재시도
+    return;
+  }
+
+  map = new naver.maps.Map('map', {
+    center: new naver.maps.LatLng(37.661, 126.764),
+    zoom: 14
+  });
+
+  // 지도 로드 완료 후 맛집 데이터 가져오기
+  loadRestaurants();
+}
 
 // 승인 맛집 불러오기
-fetch(API_URL + '?action=list')
+function loadRestaurants() {
+  fetch(API_URL + '?action=list')
   .then(r => r.json())
   .then(json => {
     if (!json.ok) {
@@ -95,6 +109,14 @@ fetch(API_URL + '?action=list')
     });
   })
   .catch(err => console.error('Fetch 에러:', err));
+}
+
+// 페이지 로드 완료 후 지도 초기화
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initMap);
+} else {
+  initMap();
+}
 
 function showSheet(item) {
   document.getElementById('sName').textContent = item.name;
