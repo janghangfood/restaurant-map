@@ -5,82 +5,67 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>장항지구 맛집지도</title>
 
+<!-- ✅ 네이버 지도 SDK -->
 <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=g7937mmgwu"></script>
 
 <style>
-html, body { margin:0; padding:0; height:100%; font-family: -apple-system, BlinkMacSystemFont, 'Noto Sans KR'; }
-#map{
-  width:100%; height:100%;
-  position:relative;
-  z-index:1;
-}
+html, body { margin:0; padding:0; height:100%; font-family:-apple-system, BlinkMacSystemFont, 'Noto Sans KR'; }
+#map { width:100%; height:100%; position:relative; z-index:1; }
 
-/* ✅ 상단 필터바(항상 표시) */
+/* ✅ 상단: 500m + 카테고리 */
 .topbar{
-  position:fixed;
-  left:12px; right:12px; top:12px;
+  position:fixed; left:12px; right:12px; top:12px;
   z-index:9999;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
+  display:flex; flex-direction:column; gap:10px;
 }
 .card{
   background: rgba(255,255,255,.96);
   backdrop-filter: blur(10px);
   border-radius:14px;
-  box-shadow: 0 10px 24px rgba(0,0,0,.12);
-  border: 1px solid rgba(0,0,0,.06);
+  box-shadow:0 10px 24px rgba(0,0,0,.12);
+  border:1px solid rgba(0,0,0,.06);
   padding:10px;
 }
-.row{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-}
+.row{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
 .hTitle{ font-weight:900; font-size:14px; }
 .sub{ font-size:12px; color:#555; margin-top:2px; }
 
 .toggle{ display:flex; align-items:center; gap:8px; user-select:none; }
 .toggle input{ width:18px; height:18px; }
 
-/* 카테고리 칩 */
 .chips{ display:flex; gap:8px; flex-wrap:wrap; }
 .chip{
-  padding:7px 10px;
-  border-radius:999px;
-  font-size:12px;
-  font-weight:900;
-  background:#f2f2f2;
-  border:1px solid rgba(0,0,0,.06);
+  padding:7px 10px; border-radius:999px;
+  font-size:12px; font-weight:900;
+  background:#f2f2f2; border:1px solid rgba(0,0,0,.06);
   cursor:pointer;
 }
 .chip.on{ background:#03c75a; color:#fff; }
 
-/* ✅ 하단 제보 버튼(항상 표시) */
-.bottomBar{
+/* ✅ 오른쪽 아래 동그란 제보 버튼 */
+.fab{
   position:fixed;
-  left:12px; right:12px; bottom:14px;
+  right:16px;
+  bottom:18px;
   z-index:9999;
-  display:flex;
-  justify-content:center;
-}
-.reportBtn{
-  width:100%;
-  max-width:560px;
-  border:0;
+  width:56px; height:56px;
+  border-radius:999px;
   background:#03c75a;
   color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
   font-weight:900;
-  border-radius:14px;
-  padding:14px 16px;
+  font-size:14px;
+  border:0;
+  box-shadow:0 12px 26px rgba(0,0,0,.22);
   cursor:pointer;
-  box-shadow: 0 10px 24px rgba(0,0,0,.18);
 }
+.fab:active{ transform: translateY(1px); }
 
-/* 바텀시트 */
-.sheet {
-  position: fixed;
+/* ✅ 바텀시트 */
+.sheet{
+  position:fixed;
   left:0; right:0; bottom:0;
   background:#fff;
   border-radius:16px 16px 0 0;
@@ -88,52 +73,82 @@ html, body { margin:0; padding:0; height:100%; font-family: -apple-system, Blink
   padding:16px;
   display:none;
   z-index:9998;
+  max-height:72vh;
+  overflow:auto;
 }
-.sheet.show { display:block; }
-.sheetTitle { font-weight:900; font-size:16px; }
-.addr { font-size:13px; color:#555; margin-top:4px; }
-.meta { margin-top:8px; display:flex; gap:6px; flex-wrap:wrap; }
-.pill {
-  font-size:12px;
-  padding:4px 8px;
+.sheet.show{ display:block; }
+.close-btn{
+  position:absolute; top:14px; right:14px;
+  width:28px; height:28px;
   border-radius:999px;
-  background:#f2f2f2;
+  border:1px solid rgba(0,0,0,.08);
+  background:#fff;
+  cursor:pointer;
+  font-size:18px; color:#777;
+  display:flex; align-items:center; justify-content:center;
 }
-.btn {
+.sheetTitle{ font-weight:900; font-size:16px; padding-right:40px; }
+.addr{ font-size:13px; color:#555; margin-top:4px; }
+.meta{ margin-top:10px; display:flex; gap:6px; flex-wrap:wrap; }
+.pill{
+  font-size:12px; padding:4px 8px; border-radius:999px; background:#f2f2f2;
+}
+
+/* ✅ 댓글 */
+.cmtBox{ margin-top:14px; }
+.cmtHeader{ font-weight:900; margin-bottom:8px; }
+.cmtList{ display:flex; flex-direction:column; gap:10px; }
+.cmtItem{
+  border:1px solid rgba(0,0,0,.07);
+  border-radius:12px;
+  padding:10px;
+  background:#fff;
+}
+.cmtTop{ display:flex; justify-content:space-between; gap:10px; }
+.cmtNick{ font-weight:900; font-size:13px; }
+.cmtTime{ font-size:11px; color:#777; white-space:nowrap; }
+.cmtContent{ margin-top:6px; font-size:13px; line-height:1.35; }
+
+.formRow{ display:flex; gap:8px; margin-top:10px; }
+.input{
+  flex:1;
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid rgba(0,0,0,.12);
+  font-size:13px;
+}
+textarea.input{ min-height:76px; resize:none; }
+.btn{
   margin-top:12px;
   padding:12px;
   background:#03c75a;
   color:#fff;
   text-align:center;
-  border-radius:10px;
+  border-radius:12px;
   font-weight:900;
   cursor:pointer;
+  border:0;
+  width:100%;
 }
-.close-btn {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 24px;
-  height: 24px;
-  cursor: pointer;
-  font-size: 20px;
-  color: #999;
+.btn.secondary{
+  background:#111;
+  margin-top:10px;
 }
+.mini{ font-size:12px; color:#777; margin-top:8px; }
 </style>
 </head>
 
 <body>
 <div id="map"></div>
 
-<!-- ✅ 상단: 500m + 카테고리(전체 포함) -->
+<!-- ✅ 상단 UI -->
 <div class="topbar">
   <div class="card">
     <div class="row">
       <div>
         <div class="hTitle">장항지구 맛집지도</div>
-        <div class="sub" id="statusText">데이터 불러오는 중…</div>
+        <div class="sub" id="statusText">불러오는 중…</div>
       </div>
-
       <div class="toggle">
         <input id="nearToggle" type="checkbox" checked />
         <label for="nearToggle" style="font-size:12px;font-weight:900;cursor:pointer;">내주변 500m</label>
@@ -150,45 +165,60 @@ html, body { margin:0; padding:0; height:100%; font-family: -apple-system, Blink
   </div>
 </div>
 
-<!-- ✅ 하단: 제보 버튼 -->
-<div class="bottomBar">
-  <button class="reportBtn" id="reportBtn" type="button">맛집 제보하기</button>
-</div>
+<!-- ✅ 오른쪽 아래 동그란 제보 버튼 -->
+<button class="fab" id="fabReport" type="button">제보</button>
 
-<!-- 바텀시트 -->
+<!-- ✅ 바텀시트 -->
 <div id="sheet" class="sheet">
-  <span class="close-btn" onclick="closeSheet()">×</span>
+  <button class="close-btn" onclick="closeSheet()">×</button>
   <div class="sheetTitle" id="sName"></div>
   <div class="addr" id="sAddr"></div>
   <div class="meta" id="sMeta"></div>
-  <div class="btn" onclick="openNaverMap()">네이버지도에서 보기</div>
+
+  <button class="btn" onclick="openNaverMap()">네이버지도에서 보기</button>
+
+  <!-- 댓글 영역 -->
+  <div class="cmtBox">
+    <div class="cmtHeader">댓글</div>
+    <div class="cmtList" id="cmtList"></div>
+
+    <div class="mini" id="cmtStatus"></div>
+
+    <div class="formRow">
+      <input class="input" id="nickInput" placeholder="닉네임" maxlength="20" />
+    </div>
+    <div class="formRow">
+      <textarea class="input" id="contentInput" placeholder="댓글을 남겨주세요" maxlength="300"></textarea>
+    </div>
+    <button class="btn secondary" id="btnAddComment" type="button">댓글 달기</button>
+  </div>
 </div>
 
 <script>
 /******** 설정 ********/
 const API_URL = "https://twilight-art-ed3c.wlalsqqq.workers.dev"; // ✅ Worker
-const REPORT_URL = "./submit.html"; // ✅ 제보 페이지(없으면 만들어야 함)
+const REPORT_URL = "./submit.html"; // ✅ 제보 페이지
 /************************/
 
-let selected = null;
 let map = null;
-
-const markers = [];   // { marker, item }
-let allData = [];
-let userLatLng = null;
+let selected = null;
 
 const statusTextEl = document.getElementById("statusText");
 const nearToggleEl = document.getElementById("nearToggle");
 const chipsEl = document.getElementById("chips");
 const filterTextEl = document.getElementById("filterText");
 
-// ✅ HTML 마커가 기본 마커로 대체되지 않게
-const ICON_W = 110, ICON_H = 110;
-function iconSize(){ return new naver.maps.Size(ICON_W, ICON_H); }
-function iconAnchor(){ return new naver.maps.Point(Math.floor(ICON_W/2), ICON_H); }
+const cmtListEl = document.getElementById("cmtList");
+const cmtStatusEl = document.getElementById("cmtStatus");
+const nickInputEl = document.getElementById("nickInput");
+const contentInputEl = document.getElementById("contentInput");
+
+const markers = [];   // { marker, item }
+let allData = [];
+let userLatLng = null;
 
 /* =========================
-   이모지 마커(B 방식)
+   이모지 마커 B 방식
 ========================= */
 const CATEGORY_PRIORITY = [
   "카페","디저트","브런치","베이커리",
@@ -203,8 +233,7 @@ const CAT_EMOJI = {
   "한식":"🍚","국밥":"🥘","고기":"🥩","해산물":"🦞","면":"🍜",
   "중식":"🥟","일식":"🍣","초밥":"🍣","스시":"🍣","돈까스":"🍖","양식":"🍝","아시아":"🍛",
   "분식":"🍢","치킨":"🍗","피자":"🍕","햄버거":"🍔","샐러드":"🥗","술집":"🍺",
-  "배달":"🛵","기타":"📍",
-  "전체":"✨"
+  "배달":"🛵","기타":"📍"
 };
 
 function parseCats(str){
@@ -226,6 +255,11 @@ function esc(s){
     .replaceAll('"',"&quot;")
     .replaceAll("'","&#039;");
 }
+
+// ✅ content 마커가 기본 마커로 대체되지 않게 (필수)
+const ICON_W = 110, ICON_H = 110;
+function iconSize(){ return new naver.maps.Size(ICON_W, ICON_H); }
+function iconAnchor(){ return new naver.maps.Point(Math.floor(ICON_W/2), ICON_H); }
 
 function markerHtmlEmojiB(item, showLabel){
   const cats = parseCats(item.category);
@@ -275,9 +309,9 @@ function markerHtmlEmojiB(item, showLabel){
 }
 
 /* =========================
-   카테고리 필터(전체 포함)
+   카테고리 (데이터에서 자동 생성 + 전체/복수선택)
 ========================= */
-const selectedCats = new Set(); // 전체가 선택되면 이 Set은 비움(=전체)
+const selectedCats = new Set(); // 비어있으면 전체
 
 function setAllSelected(){
   selectedCats.clear();
@@ -301,25 +335,24 @@ function buildChipsFromData(data){
 
   chipsEl.innerHTML = "";
 
-  // ✅ "전체" 칩은 항상 맨 앞
-  const allChip = document.createElement("div");
-  allChip.className = "chip";
-  allChip.dataset.cat = "__ALL__";
-  allChip.textContent = `${emojiOf("전체")} 전체`;
-  allChip.onclick = () => setAllSelected();
-  chipsEl.appendChild(allChip);
+  // 전체 칩
+  const all = document.createElement("div");
+  all.className = "chip";
+  all.dataset.cat = "__ALL__";
+  all.textContent = `✨ 전체`;
+  all.onclick = () => setAllSelected();
+  chipsEl.appendChild(all);
 
+  // 실제 카테고리 칩
   cats.forEach(cat=>{
     const el = document.createElement("div");
     el.className = "chip";
     el.dataset.cat = cat;
     el.textContent = `${emojiOf(cat)} ${cat}`;
     el.onclick = () => {
-      // 전체는 Set 비움 상태이므로, 여기서 선택하면 Set에 추가로 들어감
       if (selectedCats.has(cat)) selectedCats.delete(cat);
       else selectedCats.add(cat);
 
-      // 다 해제되면 = 전체
       if (selectedCats.size === 0) setAllSelected();
       else { renderChipStates(); applyFiltersAndRender(); }
     };
@@ -330,25 +363,23 @@ function buildChipsFromData(data){
 }
 
 function renderChipStates(){
-  // 전체 상태 = selectedCats.size === 0
   const isAll = selectedCats.size === 0;
-
   chipsEl.querySelectorAll(".chip").forEach(ch=>{
     const cat = ch.dataset.cat;
     if (cat === "__ALL__") ch.classList.toggle("on", isAll);
     else ch.classList.toggle("on", selectedCats.has(cat));
   });
-
   filterTextEl.textContent = isAll ? "전체" : Array.from(selectedCats).join(", ");
 }
 
 nearToggleEl.addEventListener("change", () => applyFiltersAndRender());
-document.getElementById("reportBtn").addEventListener("click", () => {
+
+document.getElementById("fabReport").addEventListener("click", () => {
   window.location.href = REPORT_URL;
 });
 
 /* =========================
-   지도 & 위치 추적
+   지도 초기화 + 위치 자동 갱신(500m 자동)
 ========================= */
 function initMap(){
   if (!naver?.maps) {
@@ -363,6 +394,8 @@ function initMap(){
   });
 
   naver.maps.Event.addListener(map, "click", () => closeSheet());
+
+  // 줌 14 이하 라벨 숨김
   naver.maps.Event.addListener(map, "zoom_changed", () => updateMarkerIcons());
 
   loadRestaurants();
@@ -378,7 +411,7 @@ function startWatchLocation(){
   navigator.geolocation.watchPosition(
     (pos)=>{
       userLatLng = new naver.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
-      applyFiltersAndRender(); // ✅ 이동할 때마다 500m 자동 갱신
+      applyFiltersAndRender(); // ✅ 이동할 때마다 자동 갱신
     },
     (err)=>{
       console.warn("위치 오류:", err);
@@ -411,7 +444,7 @@ function loadRestaurants(){
 }
 
 /* =========================
-   필터 적용(내주변 500m + 카테고리)
+   필터: 500m + 카테고리
 ========================= */
 function within500m(item){
   if (!userLatLng) return false;
@@ -419,7 +452,6 @@ function within500m(item){
   const m = naver.maps.GeometryUtil.getDistance(userLatLng, p);
   return m <= 500;
 }
-
 function matchCategory(item){
   if (selectedCats.size === 0) return true; // 전체
   const cats = parseCats(item.category);
@@ -430,7 +462,6 @@ function applyFiltersAndRender(){
   if (!map) return;
 
   const useNear = nearToggleEl.checked;
-
   const filtered = allData.filter(it=>{
     if (!matchCategory(it)) return false;
     if (useNear) {
@@ -447,15 +478,14 @@ function applyFiltersAndRender(){
 }
 
 /* =========================
-   마커 렌더링
+   마커 렌더
 ========================= */
 function clearMarkers(){
   markers.forEach(m => m.marker.setMap(null));
   markers.length = 0;
 }
-
 function updateMarkerIcons(){
-  const showLabel = map.getZoom() > 14; // ✅ 줌 14 이하 라벨 숨김
+  const showLabel = map.getZoom() > 14;
   markers.forEach(({ marker, item }) => {
     marker.setIcon({
       content: markerHtmlEmojiB(item, showLabel),
@@ -464,10 +494,8 @@ function updateMarkerIcons(){
     });
   });
 }
-
 function renderMarkers(data){
   clearMarkers();
-
   const showLabel = map.getZoom() > 14;
 
   data.forEach(item=>{
@@ -484,6 +512,7 @@ function renderMarkers(data){
     naver.maps.Event.addListener(marker, "click", ()=>{
       selected = item;
       showSheet(item);
+      loadComments(item.id); // ✅ 댓글 불러오기
     });
 
     markers.push({ marker, item });
@@ -491,7 +520,7 @@ function renderMarkers(data){
 }
 
 /* =========================
-   바텀시트
+   바텀시트 + 댓글
 ========================= */
 function showSheet(item){
   document.getElementById("sName").textContent = item.name || "";
@@ -506,10 +535,87 @@ function showSheet(item){
 
   document.getElementById("sMeta").innerHTML = pills.join("");
   document.getElementById("sheet").classList.add("show");
+
+  // 댓글 입력 초기화는 안 함(원하면 여기서 비워도 됨)
 }
 function closeSheet(){
   document.getElementById("sheet").classList.remove("show");
 }
+
+function renderComments(list){
+  cmtListEl.innerHTML = "";
+  if (!list || list.length === 0) {
+    cmtListEl.innerHTML = `<div class="mini">첫 댓글을 남겨보세요 🙂</div>`;
+    return;
+  }
+
+  list.forEach(c=>{
+    const nick = esc(c.nickname || "익명");
+    const time = esc(c.createdAt || "");
+    const content = esc(c.content || "");
+
+    const el = document.createElement("div");
+    el.className = "cmtItem";
+    el.innerHTML = `
+      <div class="cmtTop">
+        <div class="cmtNick">${nick}</div>
+        <div class="cmtTime">${time}</div>
+      </div>
+      <div class="cmtContent">${content}</div>
+    `;
+    cmtListEl.appendChild(el);
+  });
+}
+
+async function loadComments(restaurantId){
+  if (!restaurantId) return;
+  cmtStatusEl.textContent = "댓글 불러오는 중…";
+
+  try{
+    const res = await fetch(API_URL + `?action=comments&restaurantId=${encodeURIComponent(restaurantId)}`);
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error || "댓글 로드 실패");
+
+    renderComments(json.data || []);
+    cmtStatusEl.textContent = "";
+  }catch(e){
+    console.error(e);
+    cmtStatusEl.textContent = "댓글을 불러오지 못했어요.";
+  }
+}
+
+document.getElementById("btnAddComment").addEventListener("click", async ()=>{
+  if (!selected?.id) return;
+
+  const nickname = nickInputEl.value.trim();
+  const content = contentInputEl.value.trim();
+
+  if (!nickname) { alert("닉네임을 입력해줘"); return; }
+  if (!content) { alert("댓글 내용을 입력해줘"); return; }
+
+  cmtStatusEl.textContent = "등록 중…";
+
+  try{
+    const res = await fetch(API_URL, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({
+        action: "addcomment",
+        data: { restaurantId: String(selected.id), nickname, content }
+      })
+    });
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error || "댓글 등록 실패");
+
+    contentInputEl.value = ""; // 내용만 비우기
+    await loadComments(selected.id);
+    cmtStatusEl.textContent = "";
+  }catch(e){
+    console.error(e);
+    cmtStatusEl.textContent = "댓글 등록 실패";
+    alert("댓글 등록 실패: " + (e.message || ""));
+  }
+});
 
 /* =========================
    네이버지도 이동
