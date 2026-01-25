@@ -1,131 +1,148 @@
 <!doctype html>
-<html lang="ko">
+<html>
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>장항지구 맛집지도</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>장항지구 맛집지도</title>
 
-  <!-- ✅ 네이버 지도 SDK (너 Client ID로 교체) -->
-  <script src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=g7937mmgwu"></script>
-  <style>
-    html, body { margin:0; padding:0; height:100%; font-family:-apple-system,BlinkMacSystemFont,"Noto Sans KR",sans-serif; }
-    #map { width:100%; height:100%; }
+<!-- ✅ 네이버 지도 SDK (너 키 방식 유지) -->
+<script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=g7937mmgwu"></script>
 
-    /* 상단 필터바 */
-    .filter{
-      position:fixed; left:0; right:0; top:0; z-index:2000;
-      background:#fff; padding:8px; border-bottom:1px solid #eee;
-      display:flex; gap:6px; overflow-x:auto;
-    }
-    .chip{
-      padding:8px 12px; border-radius:999px; border:1px solid #ddd;
-      font-size:13px; white-space:nowrap; cursor:pointer; user-select:none;
-      background:#fff;
-    }
-    .chip.active{ border-color:#03c75a; background:#03c75a1a; font-weight:900; }
+<style>
+html, body { margin:0; padding:0; height:100%; font-family: -apple-system, BlinkMacSystemFont, 'Noto Sans KR'; }
+#map { width:100%; height:100%; }
 
-    /* 내주변 목록(가까운 순) */
-    .near-list{
-      position:fixed; left:10px; right:10px;
-      top:56px; z-index:2200;
-      background:#fff; border:1px solid #eee; border-radius:14px;
-      box-shadow:0 10px 24px rgba(0,0,0,.12);
-      padding:10px; display:none;
-      max-height:40vh; overflow:auto;
-    }
-    .near-list.show{ display:block; }
-    .near-item{ padding:10px; border-bottom:1px solid #f0f0f0; cursor:pointer; }
-    .near-item:last-child{ border-bottom:0; }
-    .near-item .n{ font-weight:900; font-size:14px; }
-    .near-item .m{ font-size:12px; color:#666; margin-top:2px; }
-    .near-item .d{ font-size:12px; color:#03c75a; margin-top:2px; font-weight:900; }
+.sheet {
+  position: fixed;
+  left:0; right:0; bottom:0;
+  background:#fff;
+  border-radius:16px 16px 0 0;
+  box-shadow:0 -6px 20px rgba(0,0,0,.2);
+  padding:16px;
+  display:none;
+  z-index:1000;
+}
+.sheet.show { display:block; }
+.title { font-weight:800; font-size:16px; }
+.addr { font-size:13px; color:#555; margin-top:4px; }
 
-    /* 제보 버튼 */
-    .fab{
-      position:fixed; right:14px; bottom:92px; z-index:2500;
-      background:#03c75a; color:#fff; padding:12px 14px; border-radius:999px;
-      font-weight:900; text-decoration:none; box-shadow:0 10px 24px rgba(0,0,0,.18);
-    }
+.meta { margin-top:8px; display:flex; gap:6px; flex-wrap:wrap; }
+.pill {
+  font-size:12px;
+  padding:4px 8px;
+  border-radius:999px;
+  background:#f2f2f2;
+}
 
-    /* 바텀시트 */
-    .sheet{
-      position:fixed; left:0; right:0; bottom:0; z-index:3000;
-      background:#fff; border-radius:16px 16px 0 0;
-      box-shadow:0 -6px 20px rgba(0,0,0,.2);
-      padding:16px; display:none;
-    }
-    .sheet.show{ display:block; }
-    .close{ position:absolute; right:14px; top:14px; font-size:22px; color:#999; cursor:pointer; }
-    .title{ font-weight:900; font-size:16px; }
-    .addr{ font-size:13px; color:#555; margin-top:4px; }
-
-    .btn{
-      margin-top:10px; padding:12px; border-radius:12px;
-      background:#03c75a; color:#fff; text-align:center; font-weight:900;
-      cursor:pointer; user-select:none;
-    }
-
-    /* 댓글 */
-    .comments{ margin-top:12px; }
-    .comment{ padding:8px 0; border-bottom:1px solid #eee; }
-    .comment b{ font-size:13px; }
-    .comment span{ font-size:12px; color:#777; margin-left:6px; }
-    input, textarea{
-      width:100%; box-sizing:border-box; padding:10px;
-      border:1px solid #ddd; border-radius:10px; font-size:14px;
-      margin-top:8px;
-    }
-    textarea{ min-height:72px; resize:vertical; }
-  </style>
+.btn {
+  margin-top:12px;
+  padding:12px;
+  background:#03c75a;
+  color:#fff;
+  text-align:center;
+  border-radius:10px;
+  font-weight:700;
+  cursor:pointer;
+}
+.close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  font-size: 20px;
+  color: #999;
+}
+</style>
 </head>
 
 <body>
-  <div class="filter" id="filter"></div>
-  <div id="nearList" class="near-list"></div>
-  <div id="map"></div>
+<div id="map"></div>
 
-  <a class="fab" href="./submit.html">➕ 맛집 제보</a>
-
-  <div id="sheet" class="sheet">
-    <div class="close" onclick="closeSheet()">×</div>
-    <div class="title" id="sName"></div>
-    <div class="addr" id="sAddr"></div>
-    <div class="btn" onclick="openNaverMap()">네이버지도에서 보기</div>
-
-    <div class="comments">
-      <h4 style="margin:14px 0 8px;">댓글</h4>
-      <div id="commentList"></div>
-      <input id="nick" placeholder="닉네임" maxlength="20" />
-      <textarea id="content" placeholder="댓글을 남겨보세요" maxlength="200"></textarea>
-      <div class="btn" onclick="addComment()">댓글 등록</div>
-    </div>
-  </div>
+<!-- 바텀시트 -->
+<div id="sheet" class="sheet">
+  <span class="close-btn" onclick="closeSheet()">×</span>
+  <div class="title" id="sName"></div>
+  <div class="addr" id="sAddr"></div>
+  <div class="meta" id="sMeta"></div>
+  <div class="btn" onclick="openNaverMap()">네이버지도에서 보기</div>
+</div>
 
 <script>
-/* ===================== 설정 ===================== */
-const API_URL = "https://twilight-art-ed3c.wlalsqqq.workers.dev"; // ✅ 너 workers.dev
-const CATEGORY_MASTER = ["한식","중식","일식","양식","카페","분식","고기","배달","치킨","피자","디저트"];
+/******** 설정 ********/
+// ✅ Cloudflare Worker API URL
+const API_URL = "https://twilight-art-ed3c.wlalsqqq.workers.dev";
+/************************/
 
-const NEAR_M = 500;            // ✅ 내 주변 500m
-const LABEL_HIDE_ZOOM = 14;    // ✅ 줌 14 이하에서는 라벨 숨김 (14 포함)
-/* ============================================== */
-
-let map = null;
-let restaurants = [];
-let markers = []; // { marker, restaurant }
 let selected = null;
+let map = null;
 
-const selectedCats = new Set();
+// 마커 목록(재로딩/줌 변경에 사용)
+const markers = [];
 
-/* 내 위치/내주변 모드 */
-let nearMode = false;
-let myPos = null;        // {lat, lng}
-let myMarker = null;
-let watchId = null;
+/* =========================
+   카테고리 → 이모지 (B 방식)
+========================= */
+const CATEGORY_PRIORITY = [
+  "카페","디저트","브런치","베이커리",
+  "한식","국밥","고기","해산물","면",
+  "중식","일식","초밥","스시","돈까스","양식","아시아",
+  "분식","치킨","피자","햄버거","샐러드","술집",
+  "배달"
+];
 
-/* ---------- 유틸 ---------- */
-function escapeHtml(str){
+const CAT_EMOJI = {
+  "카페": "☕",
+  "디저트": "🍰",
+  "브런치": "🥐",
+  "베이커리": "🥖",
+
+  "한식": "🍚",
+  "국밥": "🥘",
+  "고기": "🥩",
+  "해산물": "🦞",
+  "면": "🍜",
+
+  "중식": "🥟",
+  "일식": "🍣",
+  "초밥": "🍣",
+  "스시": "🍣",
+  "돈까스": "🍖",
+  "양식": "🍝",
+  "아시아": "🍛",
+
+  "분식": "🍢",
+  "치킨": "🍗",
+  "피자": "🍕",
+  "햄버거": "🍔",
+  "샐러드": "🥗",
+  "술집": "🍺",
+  "배달": "🛵",
+  "기타": "📍"
+};
+
+function parseCats(str){
   return String(str||"")
+    .split(",")
+    .map(s=>s.trim())
+    .filter(Boolean);
+}
+
+function pickMainCategory(categoryStr){
+  const cats = parseCats(categoryStr);
+  for (const p of CATEGORY_PRIORITY){
+    if (cats.includes(p)) return p;
+  }
+  return cats[0] || "기타";
+}
+
+function emojiOf(cat){
+  return CAT_EMOJI[cat] || CAT_EMOJI["기타"];
+}
+
+function esc(s){
+  return String(s||"")
     .replaceAll("&","&amp;")
     .replaceAll("<","&lt;")
     .replaceAll(">","&gt;")
@@ -133,371 +150,208 @@ function escapeHtml(str){
     .replaceAll("'","&#039;");
 }
 
-function distM(lat1, lng1, lat2, lng2){
-  const R = 6371000;
-  const toRad = d => d * Math.PI / 180;
-  const dLat = toRad(lat2-lat1);
-  const dLng = toRad(lng2-lng1);
-  const a =
-    Math.sin(dLat/2)**2 +
-    Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLng/2)**2;
-  return 2 * R * Math.asin(Math.sqrt(a));
-}
+function markerHtmlEmojiB(item, showLabel){
+  const cats = parseCats(item.category);
+  const main = pickMainCategory(item.category);
+  const extras = cats.filter(c => c !== main).slice(0, 2);
 
-function shouldShowLabels(){
-  if(!map) return true;
-  // 줌 14 이하(14 포함)에서는 숨김
-  return map.getZoom() > LABEL_HIDE_ZOOM;
-}
+  const mainEmoji = emojiOf(main);
+  const extraEmojis = extras.map(c => emojiOf(c));
 
-function markerIcon(r, showLabel){
-  const name = escapeHtml(r.name);
-  if(!showLabel){
-    // 라벨 숨김: 점만
-    return {
-      content: `
-        <div style="transform:translate(-50%,-50%);">
-          <div style="
-            width:12px;height:12px;border-radius:999px;background:#03c75a;border:2px solid #fff;
-            box-shadow:0 6px 16px rgba(0,0,0,.12);
-          "></div>
-        </div>
-      `,
-      anchor: new naver.maps.Point(0, 0)
-    };
-  }
-
-  // 라벨 표시
-  return {
-    content: `
-      <div style="transform:translate(-50%,-100%); display:flex; flex-direction:column; align-items:center; gap:6px;">
-        <div style="
-          background:#fff;border:1px solid #ddd;border-radius:999px;
-          padding:6px 10px;font-size:12px;font-weight:900;
-          box-shadow:0 6px 16px rgba(0,0,0,.12);
-          white-space:nowrap;
-        ">${name}</div>
-        <div style="
-          width:12px;height:12px;border-radius:999px;background:#03c75a;border:2px solid #fff;
-          box-shadow:0 6px 16px rgba(0,0,0,.12);
-        "></div>
-      </div>
-    `,
-    anchor: new naver.maps.Point(0, 0)
-  };
-}
-
-/* ---------- 필터 ---------- */
-function passFilter(r){
-  // 카테고리 OR 필터
-  if(selectedCats.size > 0){
-    const cats = (r.category || "").split(",").map(s=>s.trim()).filter(Boolean);
-    const catOk = [...selectedCats].some(c => cats.includes(c));
-    if(!catOk) return false;
-  }
-
-  // 내 주변 500m 필터
-  if(nearMode){
-    if(!myPos) return false;
-    const d = distM(myPos.lat, myPos.lng, r.lat, r.lng);
-    if(d > NEAR_M) return false;
-  }
-
-  return true;
-}
-
-/* ---------- 지도/데이터 ---------- */
-async function loadRestaurants(){
-  const res = await fetch(API_URL + "?action=list");
-  const json = await res.json();
-  restaurants = json.data || [];
-  renderMarkers();
-  if(nearMode) renderNearList();
-}
-
-function renderMarkers(){
-  // 기존 마커 제거
-  markers.forEach(x => x.marker.setMap(null));
-  markers = [];
-
-  const showLabel = shouldShowLabels();
-
-  restaurants.forEach(r=>{
-    if(!passFilter(r)) return;
-
-    const mk = new naver.maps.Marker({
-      position: new naver.maps.LatLng(r.lat, r.lng),
-      map,
-      icon: markerIcon(r, showLabel)
-    });
-
-    naver.maps.Event.addListener(mk, "click", ()=>{
-      selected = r;
-      showSheet(r);
-    });
-
-    markers.push({ marker: mk, restaurant: r });
-  });
-}
-
-function updateLabelVisibility(){
-  const showLabel = shouldShowLabels();
-  markers.forEach(x=>{
-    x.marker.setIcon(markerIcon(x.restaurant, showLabel));
-  });
-}
-
-/* ---------- 내 주변 500m (자동갱신: watchPosition) ---------- */
-function enableNearMode(){
-  if(!navigator.geolocation){
-    alert("이 브라우저는 위치 기능을 지원하지 않아");
-    return;
-  }
-
-  nearMode = true;
-  showNearList(true);
-
-  // 자동 갱신: 사용자가 이동할 때마다 업데이트
-  if(watchId !== null) navigator.geolocation.clearWatch(watchId);
-  watchId = navigator.geolocation.watchPosition((pos)=>{
-    myPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-
-    // 내 위치 마커
-    if(myMarker) myMarker.setMap(null);
-    myMarker = new naver.maps.Marker({
-      position: new naver.maps.LatLng(myPos.lat, myPos.lng),
-      map
-    });
-
-    // 첫 진입 시 근처로 이동
-    if(map && map.getZoom() < 16){
-      map.setCenter(new naver.maps.LatLng(myPos.lat, myPos.lng));
-      map.setZoom(16);
-    }
-
-    // 이동할 때마다 자동 갱신
-    renderMarkers();
-    renderNearList();
-
-  }, (err)=>{
-    console.error(err);
-    alert("위치 권한을 허용해야 내 주변 500m가 동작해!");
-    disableNearMode();
-    // 버튼 칩 active도 해제
-    const btn = document.getElementById("nearChip");
-    if(btn) btn.classList.remove("active");
-  }, { enableHighAccuracy:true, maximumAge:3000, timeout:8000 });
-}
-
-function disableNearMode(){
-  nearMode = false;
-  myPos = null;
-  showNearList(false);
-
-  if(watchId !== null){
-    navigator.geolocation.clearWatch(watchId);
-    watchId = null;
-  }
-
-  if(myMarker){
-    myMarker.setMap(null);
-    myMarker = null;
-  }
-
-  renderMarkers();
-}
-
-function showNearList(on){
-  const box = document.getElementById("nearList");
-  box.classList.toggle("show", !!on);
-  if(!on) box.innerHTML = "";
-}
-
-function renderNearList(){
-  if(!nearMode || !myPos) return;
-
-  const box = document.getElementById("nearList");
-
-  const items = restaurants
-    .map(r => ({ r, d: distM(myPos.lat, myPos.lng, r.lat, r.lng) }))
-    .filter(x => x.d <= NEAR_M)
-    .filter(x => {
-      if(selectedCats.size === 0) return true;
-      const cats = (x.r.category || "").split(",").map(s=>s.trim()).filter(Boolean);
-      return [...selectedCats].some(c => cats.includes(c));
-    })
-    .sort((a,b)=>a.d-b.d)
-    .slice(0, 30);
-
-  if(items.length === 0){
-    box.innerHTML = `<div style="padding:12px;color:#666;font-size:13px;">500m 안에 조건에 맞는 맛집이 아직 없어요.</div>`;
-    return;
-  }
-
-  box.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-      <div style="font-weight:900;">내 주변 500m (${items.length})</div>
-      <div style="font-size:12px;color:#666;">가까운 순</div>
+  const badge = extraEmojis.length ? `
+    <div style="
+      position:absolute; right:-10px; top:-10px;
+      display:flex; gap:2px;
+      background:#fff; border-radius:999px;
+      padding:2px 6px; font-size:14px;
+      box-shadow:0 4px 12px rgba(0,0,0,.18);
+      border:1px solid rgba(0,0,0,.06);
+    ">
+      ${extraEmojis.map(e => `<span>${e}</span>`).join("")}
     </div>
-    ${items.map(x => `
-      <div class="near-item" data-id="${escapeHtml(x.r.id)}">
-        <div class="n">${escapeHtml(x.r.name)}</div>
-        <div class="m">${escapeHtml(x.r.address||"")}</div>
-        <div class="d">${Math.round(x.d)}m</div>
+  ` : "";
+
+  return `
+    <div style="
+      transform: translate(-50%, -100%);
+      display:flex; flex-direction:column; align-items:center; gap:6px;
+      pointer-events:auto;
+    ">
+      <div style="position:relative;">
+        <div style="
+          width:38px; height:38px; border-radius:19px;
+          background:#fff;
+          display:flex; align-items:center; justify-content:center;
+          font-size:22px;
+          box-shadow:0 8px 20px rgba(0,0,0,.22);
+          border:1px solid rgba(0,0,0,.06);
+        ">
+          ${mainEmoji}
+        </div>
+        ${badge}
       </div>
-    `).join("")}
+
+      ${showLabel ? `
+        <div style="
+          max-width:220px;
+          background:#fff;
+          padding:6px 10px;
+          border-radius:999px;
+          font-size:12px;
+          font-weight:800;
+          white-space:nowrap;
+          overflow:hidden;
+          text-overflow:ellipsis;
+          box-shadow:0 8px 20px rgba(0,0,0,.18);
+          border:1px solid rgba(0,0,0,.06);
+        ">
+          ${esc(item.name)}
+        </div>
+      ` : ""}
+    </div>
   `;
-
-  box.querySelectorAll(".near-item").forEach(el=>{
-    el.addEventListener("click", ()=>{
-      const id = el.getAttribute("data-id");
-      const r = restaurants.find(a => String(a.id) === String(id));
-      if(!r) return;
-      selected = r;
-      map.setCenter(new naver.maps.LatLng(r.lat, r.lng));
-      showSheet(r);
-    });
-  });
 }
 
-/* ---------- 바텀시트 ---------- */
-function showSheet(r){
-  document.getElementById("sName").textContent = r.name;
-  document.getElementById("sAddr").textContent = r.address || "";
-  document.getElementById("sheet").classList.add("show");
-  loadComments();
-}
-function closeSheet(){
-  document.getElementById("sheet").classList.remove("show");
-}
-
-/* 네이버 플레이스 우선 이동 */
-function openNaverMap(){
-  if(!selected) return;
-
-  if(selected.placeUrl){
-    location.href = selected.placeUrl;
-    return;
-  }
-  location.href = "https://map.naver.com/v5/search/" + encodeURIComponent(selected.name || "");
-}
-
-/* ---------- 댓글 ---------- */
-async function loadComments(){
-  if(!selected) return;
-  const res = await fetch(API_URL + "?action=comments&restaurantId=" + encodeURIComponent(selected.id));
-  const json = await res.json();
-
-  const el = document.getElementById("commentList");
-  el.innerHTML = "";
-
-  (json.data || []).forEach(c=>{
-    const d = document.createElement("div");
-    d.className = "comment";
-    const dt = (c.createdAt || "").slice(0, 10);
-    d.innerHTML = `<b>${escapeHtml(c.nickname)}</b><span>${escapeHtml(dt)}</span><br/>${escapeHtml(c.content)}`;
-    el.appendChild(d);
-  });
-
-  if((json.data || []).length === 0){
-    el.innerHTML = `<div style="color:#666;font-size:13px;padding:8px 0;">아직 댓글이 없어요.</div>`;
-  }
-}
-
-async function addComment(){
-  if(!selected) return;
-
-  const nick = document.getElementById("nick").value.trim();
-  const content = document.getElementById("content").value.trim();
-  if(!nick || !content){
-    alert("닉네임/내용을 입력해줘");
+/* =========================
+   지도 초기화
+========================= */
+function initMap() {
+  if (typeof naver === 'undefined' || typeof naver.maps === 'undefined') {
+    console.error('네이버 지도 SDK 로드 실패');
+    setTimeout(initMap, 100);
     return;
   }
 
-  const res = await fetch(API_URL, {
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify({
-      action:"addComment",
-      data:{ restaurantId: selected.id, nickname: nick, content }
-    })
-  });
-  const json = await res.json();
-  if(!json.ok){
-    alert("댓글 등록 실패: " + (json.error || "unknown"));
-    return;
-  }
-
-  document.getElementById("content").value = "";
-  await loadComments();
-}
-
-/* ---------- 상단 필터 UI 구성 ---------- */
-function buildFilterBar(){
-  const filterEl = document.getElementById("filter");
-  filterEl.innerHTML = "";
-
-  // 내 주변 500m 토글 칩
-  const nearChip = document.createElement("div");
-  nearChip.className = "chip";
-  nearChip.id = "nearChip";
-  nearChip.textContent = "내 주변 500m";
-  nearChip.onclick = ()=>{
-    if(!nearMode){
-      nearChip.classList.add("active");
-      enableNearMode();
-    }else{
-      nearChip.classList.remove("active");
-      disableNearMode();
-    }
-  };
-  filterEl.appendChild(nearChip);
-
-  // 카테고리 칩들
-  CATEGORY_MASTER.forEach(c=>{
-    const el = document.createElement("div");
-    el.className = "chip";
-    el.textContent = c;
-    el.onclick = ()=>{
-      selectedCats.has(c) ? selectedCats.delete(c) : selectedCats.add(c);
-      el.classList.toggle("active", selectedCats.has(c));
-
-      // 필터 변경 즉시 반영
-      renderMarkers();
-      if(nearMode) renderNearList();
-    };
-    filterEl.appendChild(el);
-  });
-}
-
-/* ---------- 시작 ---------- */
-function initMap(){
-  if(typeof naver === "undefined" || !naver.maps){
-    console.error("네이버 지도 SDK 로드 실패");
-    return;
-  }
-
-  buildFilterBar();
-
-  map = new naver.maps.Map("map", {
+  map = new naver.maps.Map('map', {
     center: new naver.maps.LatLng(37.661, 126.764),
     zoom: 14
   });
 
-  // 줌 변경 시 라벨 표시/숨김 자동 반영
-  naver.maps.Event.addListener(map, "zoom_changed", ()=>{
-    updateLabelVisibility();
-  });
-
   // 지도 클릭 시 바텀시트 닫기
-  naver.maps.Event.addListener(map, "click", ()=>{
-    closeSheet();
+  naver.maps.Event.addListener(map, 'click', () => closeSheet());
+
+  // 줌 변경 시 라벨 on/off
+  naver.maps.Event.addListener(map, "zoom_changed", () => {
+    const showLabel = map.getZoom() > 14;
+    markers.forEach(({ marker, item }) => {
+      marker.setIcon({
+        content: markerHtmlEmojiB(item, showLabel),
+        anchor: new naver.maps.Point(0, 0)
+      });
+    });
   });
 
   loadRestaurants();
 }
 
-document.addEventListener("DOMContentLoaded", initMap);
+/* =========================
+   승인 맛집 불러오기
+========================= */
+function loadRestaurants() {
+  fetch(API_URL + '?action=list')
+    .then(r => r.json())
+    .then(json => {
+      if (!json.ok) {
+        console.error('데이터 로드 실패', json);
+        return;
+      }
+
+      console.log('맛집 데이터:', json.data);
+
+      // 기존 마커 제거
+      markers.forEach(m => m.marker.setMap(null));
+      markers.length = 0;
+
+      const showLabel = map.getZoom() > 14;
+
+      json.data.forEach(item => {
+        const marker = new naver.maps.Marker({
+          position: new naver.maps.LatLng(item.lat, item.lng),
+          map,
+          icon: {
+            content: markerHtmlEmojiB(item, showLabel),
+            anchor: new naver.maps.Point(0, 0)
+          }
+        });
+
+        naver.maps.Event.addListener(marker, 'click', () => {
+          selected = item;
+          showSheet(item);
+        });
+
+        markers.push({ marker, item });
+      });
+    })
+    .catch(err => console.error('Fetch 에러:', err));
+}
+
+/* =========================
+   바텀시트
+========================= */
+function showSheet(item) {
+  document.getElementById('sName').textContent = item.name || '';
+  document.getElementById('sAddr').textContent = item.address || '';
+
+  const cats = parseCats(item.category);
+  const tags = parseCats(item.tags);
+
+  const pills = [];
+  if (cats.length) pills.push(...cats.map(c => `<span class="pill">${esc(c)}</span>`));
+  if (tags.length) pills.push(...tags.map(t => `<span class="pill">#${esc(t)}</span>`));
+
+  document.getElementById('sMeta').innerHTML = pills.join("");
+  document.getElementById('sheet').classList.add('show');
+}
+
+function closeSheet() {
+  document.getElementById('sheet').classList.remove('show');
+}
+
+/* =========================
+   네이버지도 앱/웹 이동
+========================= */
+function openNaverMap() {
+  if (!selected) return;
+
+  const name = encodeURIComponent(selected.name || "");
+  const lat = selected.lat;
+  const lng = selected.lng;
+  const appname = encodeURIComponent('장항지구맛집');
+
+  const ua = navigator.userAgent.toLowerCase();
+  let targetUrl = '';
+
+  if (ua.indexOf('android') > -1) {
+    targetUrl = 'intent://place?lat=' + lat +
+      '&lng=' + lng +
+      '&name=' + name +
+      '&appname=' + appname +
+      '#Intent;scheme=nmap;package=com.nhn.android.nmap;end';
+    window.open(targetUrl, '_blank');
+
+  } else if (/iphone|ipad/.test(ua)) {
+    const link = document.createElement('a');
+    link.href = 'nmap://place?lat=' + lat +
+      '&lng=' + lng +
+      '&name=' + name +
+      '&appname=' + appname;
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+  } else {
+    targetUrl = 'https://map.naver.com/v5/search/' + name;
+    window.open(targetUrl, '_blank');
+  }
+}
+
+// 페이지 로드 완료 후 지도 초기화
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initMap);
+} else {
+  initMap();
+}
 </script>
 </body>
 </html>
