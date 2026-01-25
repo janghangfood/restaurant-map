@@ -81,6 +81,13 @@ let map = null;
 // 마커 목록(재로딩/줌 변경에 사용)
 const markers = [];
 
+// ✅ HTML 마커가 "기본 마커로 대체되는" 걸 막는 핵심 값
+// (content 마커는 size/anchor를 넉넉하게 주는 게 안전)
+const ICON_W = 110;
+const ICON_H = 110;
+function iconSize(){ return new naver.maps.Size(ICON_W, ICON_H); }
+function iconAnchor(){ return new naver.maps.Point(Math.floor(ICON_W/2), ICON_H); }
+
 /* =========================
    카테고리 → 이모지 (B 방식)
 ========================= */
@@ -230,13 +237,14 @@ function initMap() {
   // 지도 클릭 시 바텀시트 닫기
   naver.maps.Event.addListener(map, 'click', () => closeSheet());
 
-  // 줌 변경 시 라벨 on/off
+  // 줌 변경 시 라벨 on/off (✅ size/anchor 반드시 포함)
   naver.maps.Event.addListener(map, "zoom_changed", () => {
     const showLabel = map.getZoom() > 14;
     markers.forEach(({ marker, item }) => {
       marker.setIcon({
         content: markerHtmlEmojiB(item, showLabel),
-        anchor: new naver.maps.Point(0, 0)
+        size: iconSize(),
+        anchor: iconAnchor()
       });
     });
   });
@@ -270,7 +278,8 @@ function loadRestaurants() {
           map,
           icon: {
             content: markerHtmlEmojiB(item, showLabel),
-            anchor: new naver.maps.Point(0, 0)
+            size: iconSize(),
+            anchor: iconAnchor()
           }
         });
 
