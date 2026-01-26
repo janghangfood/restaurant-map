@@ -10,26 +10,40 @@
     .card{background:#fff;border:1px solid #eee;border-radius:16px;padding:16px;box-shadow:0 6px 20px rgba(0,0,0,.06);}
     h1{font-size:18px;margin:0 0 6px;}
     .sub{font-size:13px;color:#666;margin:0 0 14px;line-height:1.4;}
-    label{display:block;font-size:13px;color:#333;margin:12px 0 6px;font-weight:700;}
+    label{display:block;font-size:13px;color:#333;margin:12px 0 6px;font-weight:800;}
     input, textarea{width:100%;box-sizing:border-box;padding:12px;border:1px solid #ddd;border-radius:12px;font-size:14px;background:#fff;}
     textarea{min-height:84px;resize:vertical;}
     .chips{display:flex;flex-wrap:wrap;gap:8px;}
-    .chip{padding:9px 10px;border-radius:999px;border:1px solid #ddd;background:#fff;font-size:13px;user-select:none;}
-    .chip.active{border-color:#03c75a;background:#03c75a1a;font-weight:800;}
+    .chip{padding:9px 10px;border-radius:999px;border:1px solid #ddd;background:#fff;font-size:13px;user-select:none;cursor:pointer;}
+    .chip.active{border-color:#03c75a;background:#03c75a1a;font-weight:900;}
     .row{display:flex;gap:10px;}
     .row > *{flex:1;}
-    .btn{margin-top:14px;width:100%;padding:14px;border:0;border-radius:14px;background:#03c75a;color:#fff;font-weight:900;font-size:15px;}
+    .btn{margin-top:14px;width:100%;padding:14px;border:0;border-radius:14px;background:#03c75a;color:#fff;font-weight:900;font-size:15px;cursor:pointer;}
     .btn.secondary{background:#f3f4f6;color:#111;}
     .toast{margin-top:12px;padding:12px;border-radius:12px;background:#111;color:#fff;font-size:13px;display:none;}
     .toast.show{display:block;}
     .small{margin-top:10px;color:#777;font-size:12px;line-height:1.35;}
+    .locline{margin-top:10px;font-size:12px;color:#333;display:flex;justify-content:space-between;align-items:center;gap:10px;}
+    .locbadge{padding:6px 10px;border-radius:999px;background:#f3f4f6;border:1px solid #e5e7eb;font-weight:800;white-space:nowrap;}
+    .locbtn{padding:8px 10px;border-radius:999px;border:1px solid rgba(0,0,0,.10);background:#fff;font-weight:900;cursor:pointer;}
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card">
       <h1>장항지구 맛집 제보</h1>
-      <p class="sub">제보된 맛집은 관리자 확인 후 승인되면 지도에 표시돼요 🙂<br/>가능하면 <b>네이버 플레이스 링크</b>까지 넣어주면 정확도가 확 올라가요.</p>
+      <p class="sub">
+        제보된 맛집은 관리자 확인 후 승인되면 지도에 표시돼요 🙂<br/>
+        가능하면 <b>네이버 플레이스 링크</b>까지 넣어주면 정확도가 확 올라가요.
+      </p>
+
+      <div class="locline">
+        <div id="locText">📍 위치: 확인 중…</div>
+        <div style="display:flex; gap:8px;">
+          <span class="locbadge" id="locBadge">GPS OFF</span>
+          <button class="locbtn" type="button" onclick="refreshLocation()">현재위치 갱신</button>
+        </div>
+      </div>
 
       <label>가게명 *</label>
       <input id="name" placeholder="예) 장항짬뽕" maxlength="40" />
@@ -57,23 +71,27 @@
         </div>
       </div>
 
-      <button class="btn" onclick="submitRestaurant()">제보하기</button>
-      <button class="btn secondary" onclick="goBack()">지도로 돌아가기</button>
+      <button class="btn" type="button" onclick="submitRestaurant()">제보하기</button>
+      <button class="btn secondary" type="button" onclick="goBack()">지도로 돌아가기</button>
 
       <div id="toast" class="toast"></div>
       <div class="small">
         * 카테고리는 여러 개 선택 가능해요.<br/>
-        * 위치(lat/lng)는 관리자 승인 단계에서 보정할 수 있어요.
+        * GPS가 켜져 있으면 제보 시점에 좌표(lat/lng)를 같이 저장해요. (GPS가 꺼져도 주소 지오코딩으로 보완 가능)
       </div>
     </div>
   </div>
 
 <script>
-  // ✅ 너 GitHub 지도페이지에서 쓰는 workers.dev 그대로
+  // ✅ Worker 주소
   const API_URL = "https://twilight-art-ed3c.wlalsqqq.workers.dev";
 
+  // ✅ 카테고리
   const CATEGORY_MASTER = ["한식","중식","일식","양식","카페","분식","고기","배달","치킨","피자","디저트"];
-  const selected = new Set();
+  const selectedCats = new Set();
+
+  // ✅ GPS 위치(제보에 같이 보냄)
+  let gps = { lat: null, lng: null, ok: false };
 
   const catsEl = document.getElementById("cats");
   CATEGORY_MASTER.forEach(c=>{
@@ -81,9 +99,9 @@
     el.className = "chip";
     el.textContent = c;
     el.onclick = () => {
-      if (selected.has(c)) selected.delete(c);
-      else selected.add(c);
-      el.classList.toggle("active", selected.has(c));
+      if (selectedCats.has(c)) selectedCats.delete(c);
+      else selectedCats.add(c);
+      el.classList.toggle("active", selectedCats.has(c));
     };
     catsEl.appendChild(el);
   });
@@ -92,13 +110,58 @@
     const t = document.getElementById("toast");
     t.textContent = msg;
     t.classList.add("show");
-    setTimeout(()=>t.classList.remove("show"), 2500);
+    setTimeout(()=>t.classList.remove("show"), 2600);
   }
+
+  function setLocUI(ok, lat, lng, msg){
+    const badge = document.getElementById("locBadge");
+    const text = document.getElementById("locText");
+    if(ok){
+      badge.textContent = "GPS ON";
+      badge.style.background = "#03c75a1a";
+      badge.style.borderColor = "rgba(3,199,90,.35)";
+      text.textContent = `📍 위치: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+    }else{
+      badge.textContent = "GPS OFF";
+      badge.style.background = "#f3f4f6";
+      badge.style.borderColor = "#e5e7eb";
+      text.textContent = `📍 위치: ${msg || "사용 안 함(주소로 보완)"}`;
+    }
+  }
+
+  function refreshLocation(){
+    if(!navigator.geolocation){
+      gps = { lat:null, lng:null, ok:false };
+      setLocUI(false, 0, 0, "이 기기에서 위치 사용 불가");
+      return;
+    }
+
+    setLocUI(false, 0, 0, "확인 중…(권한 허용 필요)");
+
+    navigator.geolocation.getCurrentPosition(
+      (pos)=>{
+        gps = { lat: pos.coords.latitude, lng: pos.coords.longitude, ok: true };
+        setLocUI(true, gps.lat, gps.lng);
+      },
+      (err)=>{
+        gps = { lat:null, lng:null, ok:false };
+        let msg = "위치 권한/환경 문제";
+        if(err.code === 1) msg = "권한 거부됨";
+        if(err.code === 2) msg = "위치 사용 불가";
+        if(err.code === 3) msg = "시간 초과(실외/정확한 위치 ON 추천)";
+        setLocUI(false, 0, 0, msg);
+      },
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 5000 }
+    );
+  }
+
+  // 페이지 진입 시 1번 시도
+  refreshLocation();
 
   async function submitRestaurant(){
     const name = document.getElementById("name").value.trim();
     const address = document.getElementById("address").value.trim();
-    const category = [...selected].join(",");
+    const category = [...selectedCats].join(",");
 
     const desc = document.getElementById("desc").value.trim();
     const placeUrl = document.getElementById("placeUrl").value.trim();
@@ -108,23 +171,39 @@
     if(!name || !address){
       return toast("가게명/주소는 꼭 입력해줘!");
     }
-    if(selected.size === 0){
+    if(selectedCats.size === 0){
       return toast("카테고리를 최소 1개 선택해줘!");
     }
+
+    // ✅ 핵심: GAS가 받는 action은 "submit"
+    // ✅ 핵심: gps가 있으면 lat/lng도 같이 전송
+    const payload = {
+      action: "submit",
+      data: {
+        name,
+        address,
+        category,
+        tags,
+        placeUrl,
+        desc,
+        nickname,
+        lat: gps.ok ? gps.lat : null,
+        lng: gps.ok ? gps.lng : null
+      }
+    };
 
     try{
       const res = await fetch(API_URL, {
         method:"POST",
         headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({
-          action:"submitRestaurant",
-          data:{ name, address, category, tags, placeUrl, desc, nickname }
-        })
+        body: JSON.stringify(payload)
       });
+
       const json = await res.json();
       if(!json.ok){
         return toast("제보 실패: " + (json.error || "unknown"));
       }
+
       toast("제보 완료! 승인되면 지도에 표시돼요 🙂");
 
       // 입력 초기화
@@ -134,7 +213,7 @@
       document.getElementById("placeUrl").value = "";
       document.getElementById("nickname").value = "";
       document.getElementById("tags").value = "";
-      selected.clear();
+      selectedCats.clear();
       document.querySelectorAll(".chip").forEach(ch => ch.classList.remove("active"));
     }catch(e){
       console.error(e);
@@ -143,7 +222,6 @@
   }
 
   function goBack(){
-    // repo 경로에 맞게 필요하면 수정
     location.href = "./";
   }
 </script>
