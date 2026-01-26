@@ -22,17 +22,13 @@
     .btn.secondary{background:#f3f4f6;color:#111;}
     .toast{margin-top:12px;padding:12px;border-radius:12px;background:#111;color:#fff;font-size:13px;display:none;}
     .toast.show{display:block;}
-    .small{margin-top:10px;color:#777;font-size:12px;line-height:1.35;}
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card">
       <h1>장항지구 맛집 제보</h1>
-      <p class="sub">
-        제보된 맛집은 관리자 확인 후 승인되면 지도에 표시돼요 🙂<br/>
-        가능하면 <b>네이버 플레이스 링크</b>까지 넣어주면 정확도가 확 올라가요.
-      </p>
+      <p class="sub">제보된 맛집은 관리자 확인 후 승인되면 지도에 표시돼요 🙂</p>
 
       <label>가게명 *</label>
       <input id="name" placeholder="예) 장항짬뽕" maxlength="40" />
@@ -40,39 +36,29 @@
       <label>주소 *</label>
       <input id="address" placeholder="예) 고양시 일산동구 장항동 ..." maxlength="80" />
 
-      <label>카테고리 (복수 선택) *</label>
+      <label>카테고리(복수) *</label>
       <div id="cats" class="chips"></div>
 
-      <label>한줄 소개 (선택)</label>
-      <textarea id="desc" placeholder="예) 양 많고 가성비 좋아요" maxlength="120"></textarea>
+      <label>추천 태그(선택)</label>
+      <input id="tags" placeholder="예) 아이동반,주차" maxlength="60" />
 
-      <label>네이버 플레이스 링크 (선택)</label>
+      <label>네이버 플레이스 링크(선택)</label>
       <input id="placeUrl" placeholder="예) https://place.map.naver.com/..." maxlength="200" />
 
-      <div class="row">
-        <div>
-          <label>닉네임 (선택)</label>
-          <input id="nickname" placeholder="예) 장항맘" maxlength="20" />
-        </div>
-        <div>
-          <label>추천 태그(선택)</label>
-          <input id="tags" placeholder="예) 아이동반,주차" maxlength="60" />
-        </div>
-      </div>
+      <label>한줄 소개(선택)</label>
+      <textarea id="desc" placeholder="예) 양 많고 가성비 좋아요" maxlength="120"></textarea>
+
+      <label>닉네임(선택)</label>
+      <input id="nickname" placeholder="예) 장항맘" maxlength="20" />
 
       <button class="btn" type="button" onclick="submitRestaurant()">제보하기</button>
-      <button class="btn secondary" type="button" onclick="goBack()">지도로 돌아가기</button>
+      <button class="btn secondary" type="button" onclick="goBack()">지도로</button>
 
       <div id="toast" class="toast"></div>
-      <div class="small">
-        * 카테고리는 여러 개 선택 가능해요.<br/>
-        * 좌표(lat/lng)는 <b>주소 지오코딩</b>으로 자동 입력돼요.
-      </div>
     </div>
   </div>
 
 <script>
-  // ✅ Worker 주소(너가 쓰는 그대로)
   const API_URL = "https://twilight-art-ed3c.wlalsqqq.workers.dev";
 
   const CATEGORY_MASTER = ["한식","중식","일식","양식","카페","분식","고기","배달","치킨","피자","디저트"];
@@ -95,52 +81,36 @@
     const t = document.getElementById("toast");
     t.textContent = msg;
     t.classList.add("show");
-    setTimeout(()=>t.classList.remove("show"), 2600);
+    setTimeout(()=>t.classList.remove("show"), 2500);
   }
 
   async function submitRestaurant(){
     const name = document.getElementById("name").value.trim();
     const address = document.getElementById("address").value.trim();
     const category = [...selected].join(",");
-
-    const desc = document.getElementById("desc").value.trim();
-    const placeUrl = document.getElementById("placeUrl").value.trim();
-    const nickname = document.getElementById("nickname").value.trim();
     const tags = document.getElementById("tags").value.trim();
+    const placeUrl = document.getElementById("placeUrl").value.trim();
+    const desc = document.getElementById("desc").value.trim();
+    const nickname = document.getElementById("nickname").value.trim();
 
-    if(!name || !address){
-      return toast("가게명/주소는 꼭 입력해줘!");
-    }
-    if(selected.size === 0){
-      return toast("카테고리를 최소 1개 선택해줘!");
-    }
+    if(!name || !address) return toast("가게명/주소는 필수!");
+    if(!category) return toast("카테고리를 1개 이상 선택!");
+
+    const payload = {
+      action: "submit", // ✅ 핵심
+      data: { name, address, category, tags, placeUrl, desc, nickname }
+    };
 
     try{
       const res = await fetch(API_URL, {
         method:"POST",
         headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({
-          // ✅ 핵심: GAS가 받는 action = submit
-          action:"submit",
-          data:{ name, address, category, tags, placeUrl, desc, nickname }
-        })
+        body: JSON.stringify(payload)
       });
-
       const json = await res.json();
-      if(!json.ok){
-        return toast("제보 실패: " + (json.error || "unknown"));
-      }
 
-      toast("제보 완료! 승인되면 지도에 표시돼요 🙂");
-
-      document.getElementById("name").value = "";
-      document.getElementById("address").value = "";
-      document.getElementById("desc").value = "";
-      document.getElementById("placeUrl").value = "";
-      document.getElementById("nickname").value = "";
-      document.getElementById("tags").value = "";
-      selected.clear();
-      document.querySelectorAll(".chip").forEach(ch => ch.classList.remove("active"));
+      if(!json.ok) return toast("제보 실패: " + (json.error || "unknown"));
+      toast("제보 완료! (승인 후 지도에 표시)");
 
     }catch(e){
       console.error(e);
@@ -148,9 +118,7 @@
     }
   }
 
-  function goBack(){
-    location.href = "./";
-  }
+  function goBack(){ location.href = "./"; }
 </script>
 </body>
 </html>
