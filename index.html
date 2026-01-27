@@ -5,764 +5,273 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>장항지구 맛집지도</title>
 
-<link rel="icon" href="data:,">
-
-<!-- ✅ 네이버 지도 SDK -->
 <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=g7937mmgwu"></script>
 
 <style>
-html, body { margin:0; padding:0; height:100%; font-family:-apple-system, BlinkMacSystemFont, 'Noto Sans KR'; }
-#map { width:100%; height:100%; position:relative; z-index:1; }
+html, body { margin:0; padding:0; height:100%; font-family: -apple-system, BlinkMacSystemFont, 'Noto Sans KR'; }
+#map { width:100%; height:100%; }
 
-/* ✅ 상단 UI (배경 큰 박스 없이 칩/텍스트만) */
-.topUI{
-  position:fixed;
-  left:12px; right:12px; top:12px;
-  z-index:9999;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-  pointer-events:none;
-}
-.topRow{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-}
-.brand{
-  font-weight:900;
-  font-size:16px;
-  color:#111;
-  text-shadow: 0 2px 10px rgba(255,255,255,.9);
-}
-.status{
-  font-size:12px;
-  color:#222;
-  text-shadow: 0 2px 10px rgba(255,255,255,.9);
-}
-.controls{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  pointer-events:auto;
-}
-.toggleBtn{
-  display:flex;
-  align-items:center;
-  gap:6px;
-  padding:8px 10px;
-  border-radius:999px;
-  border:1px solid rgba(0,0,0,.08);
-  background: rgba(255,255,255,.78);
-  box-shadow:0 8px 20px rgba(0,0,0,.12);
-  font-weight:900;
-  font-size:12px;
-  cursor:pointer;
-  user-select:none;
-}
-.toggleDot{
-  width:10px; height:10px; border-radius:999px;
-  background:#bbb;
-}
-.toggleBtn.on .toggleDot{ background:#03c75a; }
-.toggleBtn.on{ border-color: rgba(3,199,90,.35); }
-
-.chipBar{
-  display:flex;
-  gap:8px;
-  flex-wrap:nowrap;
-  overflow:auto;
-  -webkit-overflow-scrolling: touch;
-  padding-bottom:2px;
-  pointer-events:auto;
-}
-.chipBar::-webkit-scrollbar{ display:none; }
-
-.chip{
-  flex:0 0 auto;
-  padding:8px 10px;
-  border-radius:999px;
-  border:1px solid rgba(0,0,0,.08);
-  background: rgba(255,255,255,.78);
-  box-shadow:0 8px 20px rgba(0,0,0,.12);
-  font-weight:900;
-  font-size:12px;
-  cursor:pointer;
-  user-select:none;
-  white-space:nowrap;
-}
-.chip.on{
-  background: rgba(3,199,90,.92);
-  border-color: rgba(3,199,90,.40);
-  color:#fff;
-}
-
-/* ✅ 오른쪽 아래 버튼들 */
-.fab{
-  position:fixed;
-  right:16px;
-  bottom:18px;
-  z-index:9999;
-  width:56px; height:56px;
-  border-radius:999px;
-  background:#03c75a;
-  color:#fff;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-weight:900;
-  font-size:14px;
-  border:0;
-  box-shadow:0 12px 26px rgba(0,0,0,.22);
-  cursor:pointer;
-}
-.fab:active{ transform: translateY(1px); }
-
-.locBtn{
-  position:fixed;
-  right:16px;
-  bottom:86px;
-  z-index:9999;
-  width:44px; height:44px;
-  border-radius:999px;
-  background: rgba(255,255,255,.92);
-  border:1px solid rgba(0,0,0,.10);
-  box-shadow:0 10px 22px rgba(0,0,0,.18);
-  cursor:pointer;
-  font-weight:900;
-  font-size:18px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-.locBtn:active{ transform: translateY(1px); }
-
-/* ✅ 바텀시트 */
-.sheet{
-  position:fixed;
-  left:0; right:0; bottom:0;
+.sheet {
+  position: fixed; left:0; right:0; bottom:0;
   background:#fff;
   border-radius:16px 16px 0 0;
   box-shadow:0 -6px 20px rgba(0,0,0,.2);
   padding:16px;
   display:none;
-  z-index:9998;
-  max-height:72vh;
-  overflow:auto;
+  z-index:1000;
 }
-.sheet.show{ display:block; }
-.close-btn{
-  position:absolute; top:14px; right:14px;
-  width:28px; height:28px;
-  border-radius:999px;
-  border:1px solid rgba(0,0,0,.08);
-  background:#fff;
-  cursor:pointer;
-  font-size:18px; color:#777;
-  display:flex; align-items:center; justify-content:center;
-}
-.sheetTitle{ font-weight:900; font-size:16px; padding-right:40px; }
-.addr{ font-size:13px; color:#555; margin-top:4px; }
-.meta{ margin-top:10px; display:flex; gap:6px; flex-wrap:wrap; }
-.pill{ font-size:12px; padding:4px 8px; border-radius:999px; background:#f2f2f2; }
+.sheet.show { display:block; }
+.title { font-weight:900; font-size:16px; }
+.addr { font-size:13px; color:#555; margin-top:4px; }
 
-.btn{
+.desc { margin-top:10px; font-size:13px; color:#222; line-height:1.35; }
+.nick { margin-top:6px; font-size:12px; color:#666; }
+
+.meta { margin-top:8px; display:flex; gap:6px; flex-wrap:wrap; }
+.pill { font-size:12px; padding:4px 8px; border-radius:999px; background:#f2f2f2; }
+
+.btn {
   margin-top:12px;
   padding:12px;
   background:#03c75a;
   color:#fff;
   text-align:center;
-  border-radius:12px;
-  font-weight:900;
+  border-radius:10px;
+  font-weight:800;
   cursor:pointer;
-  border:0;
-  width:100%;
 }
-.btn.secondary{ background:#111; margin-top:10px; }
 
-/* 댓글 */
-.cmtBox{ margin-top:14px; }
-.cmtHeader{ font-weight:900; margin-bottom:8px; }
-.cmtList{ display:flex; flex-direction:column; gap:10px; }
-.cmtItem{
-  border:1px solid rgba(0,0,0,.07);
-  border-radius:12px;
-  padding:10px;
-  background:#fff;
+.close-btn {
+  position: absolute; top: 16px; right: 16px;
+  width: 24px; height: 24px;
+  cursor: pointer; font-size: 20px; color: #999;
 }
-.cmtTop{ display:flex; justify-content:space-between; gap:10px; }
-.cmtNick{ font-weight:900; font-size:13px; }
-.cmtTime{ font-size:11px; color:#777; white-space:nowrap; }
-.cmtContent{ margin-top:6px; font-size:13px; line-height:1.35; }
 
-.formRow{ display:flex; gap:8px; margin-top:10px; }
-.input{
-  flex:1;
-  padding:10px 12px;
-  border-radius:12px;
-  border:1px solid rgba(0,0,0,.12);
-  font-size:13px;
-}
-textarea.input{ min-height:76px; resize:none; }
-.mini{ font-size:12px; color:#777; margin-top:8px; }
+.comments { margin-top:12px; border-top:1px solid #eee; padding-top:12px; }
+.c-item{ padding:8px 0; border-bottom:1px solid #f0f0f0; }
+.c-head{ display:flex; justify-content:space-between; gap:10px; }
+.c-nick{ font-weight:800; font-size:12px; color:#111; }
+.c-time{ font-size:11px; color:#777; }
+.c-body{ margin-top:4px; font-size:13px; color:#222; line-height:1.35; }
+.c-form{ display:flex; gap:8px; margin-top:10px; }
+.c-form input{ flex:1; border:1px solid #ddd; border-radius:10px; padding:10px; font-size:13px; }
+.c-form button{ border:0; border-radius:10px; padding:10px 12px; background:#111; color:#fff; font-weight:800; }
 </style>
 </head>
 
 <body>
 <div id="map"></div>
 
-<!-- ✅ 상단 UI -->
-<div class="topUI">
-  <div class="topRow">
-    <div>
-      <div class="brand">장항지구 맛집지도</div>
-      <div class="status" id="statusText">불러오는 중…</div>
-    </div>
-    <div class="controls">
-      <div id="nearBtn" class="toggleBtn on" title="내주변 500m">
-        <span class="toggleDot"></span>
-        <span>내주변 500m</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="chipBar" id="chips"></div>
-</div>
-
-<!-- ✅ 현재 위치 버튼 -->
-<button class="locBtn" id="btnMyLoc" type="button" title="현재 위치로">⦿</button>
-
-<!-- ✅ 제보 버튼 -->
-<button class="fab" id="fabReport" type="button">제보</button>
-
-<!-- ✅ 바텀시트 -->
 <div id="sheet" class="sheet">
-  <button class="close-btn" id="btnCloseSheet" type="button">×</button>
-  <div class="sheetTitle" id="sName"></div>
+  <span class="close-btn" onclick="closeSheet()">×</span>
+  <div class="title" id="sName"></div>
   <div class="addr" id="sAddr"></div>
+
+  <div class="desc" id="sDesc" style="display:none;"></div>
+  <div class="nick" id="sNick" style="display:none;"></div>
+
   <div class="meta" id="sMeta"></div>
 
-  <button class="btn" id="btnOpenNaver" type="button">네이버지도에서 보기</button>
+  <div class="btn" onclick="openNaverMap()">네이버지도에서 보기</div>
 
-  <div class="cmtBox">
-    <div class="cmtHeader">댓글</div>
-    <div class="cmtList" id="cmtList"></div>
-    <div class="mini" id="cmtStatus"></div>
-
-    <div class="formRow">
-      <input class="input" id="nickInput" placeholder="닉네임" maxlength="20" />
+  <div class="comments">
+    <div style="font-weight:900;margin-bottom:6px;">댓글</div>
+    <div id="cList"></div>
+    <div class="c-form">
+      <input id="cNick" placeholder="닉네임" maxlength="20" />
+      <input id="cText" placeholder="댓글 내용" maxlength="120" />
+      <button onclick="addComment()">등록</button>
     </div>
-    <div class="formRow">
-      <textarea class="input" id="contentInput" placeholder="댓글을 남겨주세요" maxlength="300"></textarea>
-    </div>
-    <button class="btn secondary" id="btnAddComment" type="button">댓글 달기</button>
   </div>
 </div>
 
 <script>
-/******** 설정 ********/
-const API_URL = "https://twilight-art-ed3c.wlalsqqq.workers.dev"; // ✅ 너 Worker 주소로 유지/수정
-const REPORT_URL = "./submit.html"; // ✅ repo에 submit.html 만들면 됨
-/************************/
+const API_URL = "https://twilight-art-ed3c.wlalsqqq.workers.dev";
 
-let map = null;
 let selected = null;
+let map = null;
+const markers = [];
 
-const statusTextEl = document.getElementById("statusText");
-const chipsEl = document.getElementById("chips");
-
-const cmtListEl = document.getElementById("cmtList");
-const cmtStatusEl = document.getElementById("cmtStatus");
-const nickInputEl = document.getElementById("nickInput");
-const contentInputEl = document.getElementById("contentInput");
-
-const nearBtnEl = document.getElementById("nearBtn");
-let useNear = true;
-
-const markers = []; // { marker, item }
-let allData = [];
-let userPos = null; // {lat, lng}
-
-let myMarker = null;
-let myCircle = null;
-
-/* =========================
-   카테고리 → 대표 이모지 1개
-========================= */
-const CATEGORY_PRIORITY = [
-  "카페","디저트","브런치","베이커리",
-  "한식","국밥","고기","해산물","면",
-  "중식","일식","초밥","스시","돈까스","양식","아시아",
-  "분식","치킨","피자","햄버거","샐러드","술집",
-  "배달"
-];
-const CAT_EMOJI = {
-  "카페":"☕","디저트":"🍰","브런치":"🥐","베이커리":"🥖",
-  "한식":"🍚","국밥":"🥘","고기":"🥩","해산물":"🦞","면":"🍜",
-  "중식":"🥟","일식":"🍣","초밥":"🍣","스시":"🍣","돈까스":"🍖","양식":"🍝","아시아":"🍛",
-  "분식":"🍢","치킨":"🍗","피자":"🍕","햄버거":"🍔","샐러드":"🥗","술집":"🍺",
-  "배달":"🛵","기타":"📍"
-};
-function parseCats(str){ return String(str||"").split(",").map(s=>s.trim()).filter(Boolean); }
-function pickMainCategory(categoryStr){
-  const cats = parseCats(categoryStr);
-  for (const p of CATEGORY_PRIORITY) if (cats.includes(p)) return p;
-  return cats[0] || "기타";
+function parseCats(str){
+  return String(str||"").split(",").map(s=>s.trim()).filter(Boolean);
 }
-function emojiOf(cat){ return CAT_EMOJI[cat] || "📍"; }
 function esc(s){
-  return String(s||"")
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
+  return String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
 }
 
-/* ✅ 마커 아이콘 크기/앵커 고정 */
-const ICON_W = 110, ICON_H = 110;
-function iconSize(){ return new naver.maps.Size(ICON_W, ICON_H); }
-function iconAnchor(){ return new naver.maps.Point(Math.floor(ICON_W/2), ICON_H); }
-
-function markerHtml(item, showLabel){
-  const main = pickMainCategory(item.category);
-  const emoji = emojiOf(main);
-  return `
-    <div style="transform: translate(-50%, -100%); display:flex; flex-direction:column; align-items:center; gap:6px; pointer-events:auto;">
-      <div style="
-        width:38px; height:38px; border-radius:19px;
-        background:#fff; display:flex; align-items:center; justify-content:center;
-        font-size:22px; box-shadow:0 8px 20px rgba(0,0,0,.22);
-        border:1px solid rgba(0,0,0,.06);
-      ">${emoji}</div>
-      ${showLabel ? `
-        <div style="
-          max-width:200px; background:#fff; padding:6px 10px; border-radius:999px;
-          font-size:12px; font-weight:900; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-          box-shadow:0 8px 20px rgba(0,0,0,.18); border:1px solid rgba(0,0,0,.06);
-        ">${esc(item.name)}</div>` : ""}
-    </div>`;
-}
-
-/* =========================
-   거리 계산 (500m)
-========================= */
-function distMeters(lat1, lng1, lat2, lng2){
-  const R = 6371000;
-  const toRad = d => d * Math.PI / 180;
-  const dLat = toRad(lat2 - lat1);
-  const dLng = toRad(lng2 - lng1);
-  const a =
-    Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-    Math.sin(dLng/2) * Math.sin(dLng/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  return R * c;
-}
-function within500m(item){
-  if (!userPos) return false;
-  const d = distMeters(userPos.lat, userPos.lng, Number(item.lat), Number(item.lng));
-  return d <= 500;
-}
-
-/* =========================
-   카테고리 칩(다중 선택)
-========================= */
-const selectedCats = new Set();
-
-function setAllSelected(){
-  selectedCats.clear();
-  renderChipsState();
-  applyFiltersAndRender();
-}
-function buildChipsFromData(data){
-  const set = new Set();
-  data.forEach(it => parseCats(it.category).forEach(c => set.add(c)));
-  const cats = Array.from(set);
-
-  cats.sort((a,b)=>{
-    const ia = CATEGORY_PRIORITY.indexOf(a);
-    const ib = CATEGORY_PRIORITY.indexOf(b);
-    if (ia === -1 && ib === -1) return a.localeCompare(b, "ko");
-    if (ia === -1) return 1;
-    if (ib === -1) return -1;
-    return ia - ib;
-  });
-
-  chipsEl.innerHTML = "";
-
-  const all = document.createElement("div");
-  all.className = "chip on";
-  all.dataset.cat = "__ALL__";
-  all.textContent = "✨ 전체";
-  all.onclick = () => setAllSelected();
-  chipsEl.appendChild(all);
-
-  cats.forEach(cat=>{
-    const el = document.createElement("div");
-    el.className = "chip";
-    el.dataset.cat = cat;
-    el.textContent = `${emojiOf(cat)} ${cat}`;
-    el.onclick = () => {
-      if (selectedCats.has(cat)) selectedCats.delete(cat);
-      else selectedCats.add(cat);
-
-      if (selectedCats.size === 0) setAllSelected();
-      else { renderChipsState(); applyFiltersAndRender(); }
-    };
-    chipsEl.appendChild(el);
-  });
-
-  renderChipsState();
-}
-function renderChipsState(){
-  const isAll = selectedCats.size === 0;
-  chipsEl.querySelectorAll(".chip").forEach(ch=>{
-    const cat = ch.dataset.cat;
-    if (cat === "__ALL__") ch.classList.toggle("on", isAll);
-    else ch.classList.toggle("on", selectedCats.has(cat));
-  });
-}
-function matchCategory(item){
-  if (selectedCats.size === 0) return true;
-  const cats = parseCats(item.category);
-  return cats.some(c => selectedCats.has(c));
-}
-
-/* =========================
-   UI 이벤트
-========================= */
-nearBtnEl.addEventListener("click", ()=>{
-  useNear = !useNear;
-  nearBtnEl.classList.toggle("on", useNear);
-  applyFiltersAndRender();
-});
-
-document.getElementById("fabReport").addEventListener("click", ()=>{
-  window.location.href = REPORT_URL;
-});
-
-document.getElementById("btnMyLoc").addEventListener("click", ()=>{
-  if (!map) return;
-  if (!userPos){ alert("현재 위치를 아직 못 찾았어요. 위치 권한을 허용해줘!"); return; }
-  map.panTo(new naver.maps.LatLng(userPos.lat, userPos.lng));
-  if (map.getZoom() < 16) map.setZoom(16, true);
-});
-
-/* ✅ 바텀시트 버튼들 */
-document.getElementById("btnCloseSheet").addEventListener("click", closeSheet);
-document.getElementById("btnOpenNaver").addEventListener("click", openNaverMap);
-
-/* ✅ 댓글 달기 버튼(이제 null 아님: HTML에 존재) */
-document.getElementById("btnAddComment").addEventListener("click", addCommentFromUI);
-
-/* =========================
-   지도 초기화 + 위치 자동 갱신
-========================= */
-function initMap(){
-  if (!naver?.maps) {
-    console.error("네이버 지도 SDK 로드 실패");
+function initMap() {
+  if (!window.naver || !naver.maps) {
     setTimeout(initMap, 100);
     return;
   }
 
-  map = new naver.maps.Map("map", {
+  map = new naver.maps.Map('map', {
     center: new naver.maps.LatLng(37.661, 126.764),
     zoom: 14
   });
 
-  naver.maps.Event.addListener(map, "click", () => closeSheet());
-  naver.maps.Event.addListener(map, "zoom_changed", () => updateMarkerIcons());
-
+  naver.maps.Event.addListener(map, 'click', () => closeSheet());
   loadRestaurants();
-  startWatchLocation();
 }
 
-function startWatchLocation(){
-  if (!navigator.geolocation){
-    statusTextEl.textContent = "이 기기에서 위치 사용 불가";
-    return;
-  }
+async function loadRestaurants() {
+  try{
+    const r = await fetch(API_URL + "?action=list");
+    const json = await r.json();
+    if(!json.ok) return console.error("list fail", json);
 
-  statusTextEl.textContent = "위치 확인 중…(허용 눌러줘)";
+    markers.forEach(m => m.setMap(null));
+    markers.length = 0;
 
-  navigator.geolocation.getCurrentPosition(
-    (pos)=>{
-      userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-      updateMyLocationOverlay();
-      applyFiltersAndRender();
-      statusTextEl.textContent = "위치 확인됨";
-    },
-    (err)=>{
-      console.warn("초기 위치 실패:", err);
-      statusTextEl.textContent = "위치 잡는 중…(조금만 기다려줘)";
-    },
-    { enableHighAccuracy:false, timeout:5000, maximumAge:60000 }
-  );
+    json.data.forEach(item => {
+      const marker = new naver.maps.Marker({
+        position: new naver.maps.LatLng(item.lat, item.lng),
+        map
+      });
 
-  navigator.geolocation.watchPosition(
-    (pos)=>{
-      userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-      updateMyLocationOverlay();
-      applyFiltersAndRender();
-    },
-    (err)=>{
-      console.warn("위치 오류:", err);
-      if (err.code === 1) statusTextEl.textContent = "내주변 500m: 위치 권한 필요(허용 눌러줘)";
-      else if (err.code === 3) statusTextEl.textContent = "위치가 늦게 잡혀요(실외/정확한 위치 ON 추천)";
-      else statusTextEl.textContent = "위치 사용 불가";
-    },
-    { enableHighAccuracy:true, timeout:20000, maximumAge:5000 }
-  );
-}
+      naver.maps.Event.addListener(marker, 'click', () => {
+        selected = item;
+        showSheet(item);
+        loadComments(item.id);
+      });
 
-function updateMyLocationOverlay(){
-  if (!map || !userPos) return;
-  const latlng = new naver.maps.LatLng(userPos.lat, userPos.lng);
-
-  if (!myMarker){
-    myMarker = new naver.maps.Marker({
-      position: latlng,
-      map,
-      icon: {
-        content: `<div style="transform:translate(-50%,-50%); width:14px; height:14px; border-radius:999px;
-          background:#03c75a; box-shadow:0 6px 16px rgba(0,0,0,.25); border:2px solid #fff;"></div>`,
-        size: new naver.maps.Size(20,20),
-        anchor: new naver.maps.Point(10,10)
-      }
+      markers.push(marker);
     });
-  } else {
-    myMarker.setPosition(latlng);
-  }
 
-  if (!myCircle){
-    myCircle = new naver.maps.Circle({
-      map,
-      center: latlng,
-      radius: 500,
-      fillColor: "#03c75a",
-      fillOpacity: 0.12,
-      strokeColor: "#03c75a",
-      strokeOpacity: 0.35,
-      strokeWeight: 2
-    });
-  } else {
-    myCircle.setCenter(latlng);
+  }catch(e){
+    console.error(e);
   }
 }
 
-/* =========================
-   데이터 로드
-========================= */
-function loadRestaurants(){
-  fetch(API_URL + "?action=list")
-    .then(r=>r.json())
-    .then(json=>{
-      if (!json.ok){
-        statusTextEl.textContent = "데이터 로드 실패";
-        console.error(json);
-        return;
-      }
-      allData = json.data || [];
-      buildChipsFromData(allData);
-      applyFiltersAndRender();
-    })
-    .catch(err=>{
-      console.error(err);
-      statusTextEl.textContent = "데이터 요청 오류";
-    });
-}
-
-/* =========================
-   마커 렌더
-========================= */
-function clearMarkers(){
-  markers.forEach(m => m.marker.setMap(null));
-  markers.length = 0;
-}
-function updateMarkerIcons(){
-  if (!map) return;
-  const showLabel = map.getZoom() > 14; // ✅ 줌 14 이하 라벨 숨김
-  markers.forEach(({ marker, item }) => {
-    marker.setIcon({
-      content: markerHtml(item, showLabel),
-      size: iconSize(),
-      anchor: iconAnchor()
-    });
-  });
-}
-function renderMarkers(data){
-  clearMarkers();
-  const showLabel = map.getZoom() > 14;
-
-  data.forEach(item=>{
-    const marker = new naver.maps.Marker({
-      position: new naver.maps.LatLng(item.lat, item.lng),
-      map,
-      icon:{
-        content: markerHtml(item, showLabel),
-        size: iconSize(),
-        anchor: iconAnchor()
-      }
-    });
-
-    naver.maps.Event.addListener(marker, "click", ()=>{
-      selected = item;
-      showSheet(item);
-      loadComments(item.id);
-    });
-
-    markers.push({ marker, item });
-  });
-}
-
-/* =========================
-   필터 적용
-========================= */
-function applyFiltersAndRender(){
-  if (!map) return;
-
-  const filtered = allData.filter(it=>{
-    if (!matchCategory(it)) return false;
-    if (useNear){
-      if (!userPos) return false;
-      return within500m(it);
-    }
-    return true;
-  });
-
-  renderMarkers(filtered);
-
-  if (useNear && !userPos) statusTextEl.textContent = "내주변 500m: 위치 권한 필요(허용 눌러줘)";
-  else statusTextEl.textContent = `표시 ${filtered.length}개${useNear ? " (500m)" : ""}`;
-}
-
-/* =========================
-   바텀시트 + 댓글
-========================= */
 function showSheet(item){
   document.getElementById("sName").textContent = item.name || "";
   document.getElementById("sAddr").textContent = item.address || "";
+
+  // ✅ desc 표시
+  const descEl = document.getElementById("sDesc");
+  if(item.desc && String(item.desc).trim()){
+    descEl.style.display = "block";
+    descEl.textContent = String(item.desc);
+  }else{
+    descEl.style.display = "none";
+    descEl.textContent = "";
+  }
+
+  // ✅ nickname 표시
+  const nickEl = document.getElementById("sNick");
+  if(item.nickname && String(item.nickname).trim()){
+    nickEl.style.display = "block";
+    nickEl.textContent = "제보: " + String(item.nickname);
+  }else{
+    nickEl.style.display = "none";
+    nickEl.textContent = "";
+  }
 
   const cats = parseCats(item.category);
   const tags = parseCats(item.tags);
 
   const pills = [];
-  if (cats.length) pills.push(...cats.map(c => `<span class="pill">${esc(c)}</span>`));
-  if (tags.length) pills.push(...tags.map(t => `<span class="pill">#${esc(t)}</span>`));
-
+  if(cats.length) pills.push(...cats.map(c=>`<span class="pill">${esc(c)}</span>`));
+  if(tags.length) pills.push(...tags.map(t=>`<span class="pill">#${esc(t)}</span>`));
   document.getElementById("sMeta").innerHTML = pills.join("");
+
   document.getElementById("sheet").classList.add("show");
 }
+
 function closeSheet(){
   document.getElementById("sheet").classList.remove("show");
 }
 
-/* 댓글 */
-function renderComments(list){
-  cmtListEl.innerHTML = "";
-  if (!list || list.length === 0){
-    cmtListEl.innerHTML = `<div class="mini">첫 댓글을 남겨보세요 🙂</div>`;
+function openNaverMap(){
+  if(!selected) return;
+
+  // ✅ placeUrl이 있으면 그걸 최우선으로 연다 (이상한 주소 방지)
+  const placeUrl = String(selected.placeUrl||"").trim();
+  if(placeUrl && /^https?:\/\//i.test(placeUrl)){
+    window.open(placeUrl, "_blank");
     return;
   }
-  list.forEach(c=>{
-    const nick = esc(c.nickname || "익명");
-    const time = esc(c.createdAt || "");
-    const content = esc(c.content || "");
-    const el = document.createElement("div");
-    el.className = "cmtItem";
-    el.innerHTML = `
-      <div class="cmtTop">
-        <div class="cmtNick">${nick}</div>
-        <div class="cmtTime">${time}</div>
-      </div>
-      <div class="cmtContent">${content}</div>
-    `;
-    cmtListEl.appendChild(el);
-  });
-}
 
-async function loadComments(restaurantId){
-  if (!restaurantId) return;
-  cmtStatusEl.textContent = "댓글 불러오는 중…";
-  try{
-    const res = await fetch(API_URL + `?action=comments&restaurantId=${encodeURIComponent(restaurantId)}`);
-    const json = await res.json();
-    if (!json.ok) throw new Error(json.error || "댓글 로드 실패");
-    renderComments(json.data || []);
-    cmtStatusEl.textContent = "";
-  }catch(e){
-    console.error(e);
-    cmtStatusEl.textContent = "댓글을 불러오지 못했어요.";
-  }
-}
-
-async function addCommentFromUI(){
-  if (!selected?.id) return;
-
-  const nickname = nickInputEl.value.trim();
-  const content = contentInputEl.value.trim();
-
-  if (!nickname) { alert("닉네임을 입력해줘"); return; }
-  if (!content) { alert("댓글 내용을 입력해줘"); return; }
-
-  cmtStatusEl.textContent = "등록 중…";
-  try{
-    const res = await fetch(API_URL, {
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({
-        action: "addcomment",
-        data: { restaurantId: String(selected.id), nickname, content }
-      })
-    });
-    const json = await res.json();
-    if (!json.ok) throw new Error(json.error || "댓글 등록 실패");
-
-    contentInputEl.value = "";
-    await loadComments(selected.id);
-    cmtStatusEl.textContent = "";
-  }catch(e){
-    console.error(e);
-    cmtStatusEl.textContent = "댓글 등록 실패";
-    alert("댓글 등록 실패: " + (e.message || ""));
-  }
-}
-
-/* =========================
-   네이버지도 이동
-========================= */
-function openNaverMap(){
-  if (!selected) return;
-
+  // 없으면 기존 방식 fallback
   const name = encodeURIComponent(selected.name || "");
   const lat = selected.lat;
   const lng = selected.lng;
   const appname = encodeURIComponent("장항지구맛집");
 
   const ua = navigator.userAgent.toLowerCase();
-  if (ua.includes("android")) {
-    const url = "intent://place?lat=" + lat + "&lng=" + lng + "&name=" + name + "&appname=" + appname +
-      "#Intent;scheme=nmap;package=com.nhn.android.nmap;end";
-    window.open(url, "_blank");
+  if (ua.indexOf('android') > -1) {
+    const targetUrl = 'intent://place?lat=' + lat +
+      '&lng=' + lng +
+      '&name=' + name +
+      '&appname=' + appname +
+      '#Intent;scheme=nmap;package=com.nhn.android.nmap;end';
+    window.open(targetUrl, '_blank');
   } else if (/iphone|ipad/.test(ua)) {
-    const link = document.createElement("a");
-    link.href = "nmap://place?lat=" + lat + "&lng=" + lng + "&name=" + name + "&appname=" + appname;
-    link.target = "_blank";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const url = 'nmap://place?lat=' + lat + '&lng=' + lng + '&name=' + name + '&appname=' + appname;
+    location.href = url;
   } else {
-    window.open("https://map.naver.com/v5/search/" + name, "_blank");
+    window.open('https://map.naver.com/v5/search/' + name, "_blank");
   }
 }
 
-/* =========================
-   시작
-========================= */
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initMap);
+async function loadComments(restaurantId){
+  const list = document.getElementById("cList");
+  list.innerHTML = "불러오는 중...";
+
+  try{
+    const r = await fetch(API_URL + `?action=comments&restaurantId=${encodeURIComponent(restaurantId)}`);
+    const json = await r.json();
+    if(!json.ok){ list.innerHTML = "댓글 로드 실패"; return; }
+
+    const data = json.data || [];
+    if(!data.length){ list.innerHTML = "<div style='color:#777;font-size:13px;'>댓글이 아직 없어요</div>"; return; }
+
+    list.innerHTML = data.map(c => `
+      <div class="c-item">
+        <div class="c-head">
+          <div class="c-nick">${esc(c.nickname)}</div>
+          <div class="c-time">${esc(c.createdAt || "")}</div>
+        </div>
+        <div class="c-body">${esc(c.content)}</div>
+      </div>
+    `).join("");
+
+  }catch(e){
+    console.error(e);
+    list.innerHTML = "댓글 로드 실패";
+  }
+}
+
+async function addComment(){
+  if(!selected) return;
+
+  const nickname = document.getElementById("cNick").value.trim();
+  const content = document.getElementById("cText").value.trim();
+  if(!nickname || !content) return;
+
+  try{
+    const r = await fetch(API_URL, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({
+        action:"addcomment",
+        data:{ restaurantId: selected.id, nickname, content }
+      })
+    });
+    const json = await r.json();
+    if(!json.ok){ alert("댓글 등록 실패: " + (json.error||"")); return; }
+
+    document.getElementById("cText").value = "";
+    loadComments(selected.id);
+
+  }catch(e){
+    console.error(e);
+    alert("댓글 등록 실패(네트워크)");
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initMap);
 } else {
   initMap();
 }
