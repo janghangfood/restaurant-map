@@ -359,7 +359,7 @@ function esc(s){
 /* ✅ 마커 아이콘 크기/앵커 고정 */
 const ICON_W = 110, ICON_H = 110;
 function iconSize(){ return new naver.maps.Size(ICON_W, ICON_H); }
-function iconAnchor(){ return new naver.maps.Point(Math.floor(ICON_W/2), ICON_H); }
+function iconAnchor(){ return new naver.maps.Point(0, 0); }
 
 function markerHtml(item, showLabel){
   const main = pickMainCategory(item.category);
