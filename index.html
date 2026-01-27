@@ -25,8 +25,6 @@ html, body { margin:0; padding:0; height:100%; font-family:-apple-system, BlinkM
   flex-direction:column;
   gap:6px;
   pointer-events:none;
-
-  /* ✅ 화면 15% 넘지 않게 제한 */
   max-height:15vh;
 }
 .topRow{
@@ -37,18 +35,17 @@ html, body { margin:0; padding:0; height:100%; font-family:-apple-system, BlinkM
 }
 .brand{
   font-weight:900;
-  font-size:13px;            /* ⬇ 줄임 */
+  font-size:13px;
   color:#111;
   text-shadow: 0 2px 10px rgba(255,255,255,.9);
   line-height:1.05;
 }
 .status{
-  font-size:10.5px;          /* ⬇ 줄임 */
+  font-size:10.5px;
   color:#222;
   text-shadow: 0 2px 10px rgba(255,255,255,.9);
   margin-top:2px;
 }
-
 .controls{
   display:flex;
   align-items:center;
@@ -59,13 +56,13 @@ html, body { margin:0; padding:0; height:100%; font-family:-apple-system, BlinkM
   display:flex;
   align-items:center;
   gap:5px;
-  padding:6px 8px;           /* ⬇ 줄임 */
+  padding:6px 8px;
   border-radius:999px;
   border:1px solid rgba(0,0,0,.08);
   background: rgba(255,255,255,.78);
   box-shadow:0 8px 20px rgba(0,0,0,.10);
   font-weight:900;
-  font-size:11px;            /* ⬇ 줄임 */
+  font-size:11px;
   cursor:pointer;
   user-select:none;
 }
@@ -78,25 +75,25 @@ html, body { margin:0; padding:0; height:100%; font-family:-apple-system, BlinkM
 
 .chipBar{
   display:flex;
-  gap:6px;                   /* ⬇ 줄임 */
+  gap:6px;
   flex-wrap:nowrap;
   overflow:auto;
   -webkit-overflow-scrolling: touch;
   padding-bottom:1px;
   pointer-events:auto;
-  max-height:9vh;            /* ✅ 칩 영역도 제한 */
+  max-height:9vh;
 }
 .chipBar::-webkit-scrollbar{ display:none; }
 
 .chip{
   flex:0 0 auto;
-  padding:6px 8px;           /* ⬇ 줄임 */
+  padding:6px 8px;
   border-radius:999px;
   border:1px solid rgba(0,0,0,.08);
   background: rgba(255,255,255,.78);
   box-shadow:0 8px 20px rgba(0,0,0,.10);
   font-weight:900;
-  font-size:11px;            /* ⬇ 줄임 */
+  font-size:11px;
   cursor:pointer;
   user-select:none;
   white-space:nowrap;
@@ -115,7 +112,7 @@ html, body { margin:0; padding:0; height:100%; font-family:-apple-system, BlinkM
   right:14px;
   bottom:16px;
   z-index:9999;
-  width:52px; height:52px;   /* ⬇ 줄임 */
+  width:52px; height:52px;
   border-radius:999px;
   background:#03c75a;
   color:#fff;
@@ -123,7 +120,7 @@ html, body { margin:0; padding:0; height:100%; font-family:-apple-system, BlinkM
   align-items:center;
   justify-content:center;
   font-weight:900;
-  font-size:13px;            /* ⬇ 줄임 */
+  font-size:13px;
   border:0;
   box-shadow:0 12px 26px rgba(0,0,0,.22);
   cursor:pointer;
@@ -135,14 +132,14 @@ html, body { margin:0; padding:0; height:100%; font-family:-apple-system, BlinkM
   right:14px;
   bottom:78px;
   z-index:9999;
-  width:40px; height:40px;   /* ⬇ 줄임 */
+  width:40px; height:40px;
   border-radius:999px;
   background: rgba(255,255,255,.92);
   border:1px solid rgba(0,0,0,.10);
   box-shadow:0 10px 22px rgba(0,0,0,.18);
   cursor:pointer;
   font-weight:900;
-  font-size:16px;            /* ⬇ 줄임 */
+  font-size:16px;
   display:flex;
   align-items:center;
   justify-content:center;
@@ -177,6 +174,21 @@ html, body { margin:0; padding:0; height:100%; font-family:-apple-system, BlinkM
 }
 .sheetTitle{ font-weight:900; font-size:16px; padding-right:40px; }
 .addr{ font-size:13px; color:#555; margin-top:4px; }
+
+/* ✅ 소개(desc) 영역 추가 */
+.desc{
+  margin-top:10px;
+  font-size:13px;
+  line-height:1.35;
+  color:#222;
+  background:#f6f7f9;
+  border:1px solid rgba(0,0,0,.06);
+  border-radius:12px;
+  padding:10px 12px;
+  display:none; /* 내용 없으면 숨김 */
+}
+.desc.show{ display:block; }
+
 .meta{ margin-top:10px; display:flex; gap:6px; flex-wrap:wrap; }
 .pill{ font-size:12px; padding:4px 8px; border-radius:999px; background:#f2f2f2; }
 
@@ -254,6 +266,10 @@ textarea.input{ min-height:76px; resize:none; }
   <button class="close-btn" id="btnCloseSheet" type="button">×</button>
   <div class="sheetTitle" id="sName"></div>
   <div class="addr" id="sAddr"></div>
+
+  <!-- ✅ 소개(desc) 표시 영역 -->
+  <div class="desc" id="sDesc"></div>
+
   <div class="meta" id="sMeta"></div>
 
   <button class="btn" id="btnOpenNaver" type="button">네이버지도에서 보기</button>
@@ -289,6 +305,9 @@ const cmtListEl = document.getElementById("cmtList");
 const cmtStatusEl = document.getElementById("cmtStatus");
 const nickInputEl = document.getElementById("nickInput");
 const contentInputEl = document.getElementById("contentInput");
+
+/* ✅ desc 영역 엘리먼트 추가 */
+const descEl = document.getElementById("sDesc");
 
 const nearBtnEl = document.getElementById("nearBtn");
 let useNear = true;
@@ -449,10 +468,7 @@ function matchCategory(item){
 nearBtnEl.addEventListener("click", ()=>{
   useNear = !useNear;
   nearBtnEl.classList.toggle("on", useNear);
-
-  // ✅ 500m 원은 토글에 따라 표시/숨김
   if (myCircle) myCircle.setMap(useNear ? map : null);
-
   applyFiltersAndRender();
 });
 
@@ -470,8 +486,6 @@ document.getElementById("btnMyLoc").addEventListener("click", ()=>{
 /* ✅ 바텀시트 버튼들 */
 document.getElementById("btnCloseSheet").addEventListener("click", closeSheet);
 document.getElementById("btnOpenNaver").addEventListener("click", openNaverMap);
-
-/* ✅ 댓글 달기 */
 document.getElementById("btnAddComment").addEventListener("click", addCommentFromUI);
 
 /* =========================
@@ -504,7 +518,6 @@ function startWatchLocation(){
 
   statusTextEl.textContent = "위치 확인 중…(허용 눌러줘)";
 
-  // ✅ 초기 1회
   navigator.geolocation.getCurrentPosition(
     (pos)=>{
       userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
@@ -519,12 +532,11 @@ function startWatchLocation(){
     { enableHighAccuracy:false, timeout:6000, maximumAge:60000 }
   );
 
-  // ✅ 이동할 때마다 자동 갱신(핵심)
   navigator.geolocation.watchPosition(
     (pos)=>{
       userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
       updateMyLocationOverlay(false);
-      applyFiltersAndRender(); // ✅ 매 이동마다 500m/카테고리 재적용
+      applyFiltersAndRender();
     },
     (err)=>{
       console.warn("위치 오류:", err);
@@ -557,7 +569,7 @@ function updateMyLocationOverlay(isFirst){
 
   if (!myCircle){
     myCircle = new naver.maps.Circle({
-      map: useNear ? map : null,  // ✅ 토글 ON일 때만 보이기
+      map: useNear ? map : null,
       center: latlng,
       radius: 500,
       fillColor: "#03c75a",
@@ -571,9 +583,7 @@ function updateMyLocationOverlay(isFirst){
     myCircle.setMap(useNear ? map : null);
   }
 
-  // ✅ 처음 위치 잡혔을 때만 부드럽게 이동(원하면 제거 가능)
   if (isFirst){
-    // 너무 튀면 싫다 했으니 panTo만, 줌은 강제하지 않음
     map.panTo(latlng);
   }
 }
@@ -609,7 +619,7 @@ function clearMarkers(){
 }
 function updateMarkerIcons(){
   if (!map) return;
-  const showLabel = map.getZoom() > 14; // ✅ 줌 14 이하 라벨 숨김
+  const showLabel = map.getZoom() > 14;
   markers.forEach(({ marker, item }) => {
     marker.setIcon({
       content: markerHtml(item, showLabel),
@@ -670,6 +680,16 @@ function applyFiltersAndRender(){
 function showSheet(item){
   document.getElementById("sName").textContent = item.name || "";
   document.getElementById("sAddr").textContent = item.address || "";
+
+  // ✅ desc(소개) 표시 추가
+  const d = String(item.desc || "").trim();
+  if (d){
+    descEl.textContent = d;
+    descEl.classList.add("show");
+  } else {
+    descEl.textContent = "";
+    descEl.classList.remove("show");
+  }
 
   const cats = parseCats(item.category);
   const tags = parseCats(item.tags);
@@ -758,8 +778,6 @@ async function addCommentFromUI(){
 
 /* =========================
    ✅ 네이버지도 이동 (placeUrl 우선)
-   - selected.placeUrl 있으면 그걸로 열기
-   - 없으면 기존 방식(앱/웹 검색) 유지
 ========================= */
 function openNaverMap(){
   if (!selected) return;
