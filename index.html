@@ -11,125 +11,169 @@
 html, body { margin:0; padding:0; height:100%; font-family:-apple-system,BlinkMacSystemFont,"Noto Sans KR",sans-serif; }
 #map { width:100%; height:100%; }
 
-/* ===== 상단 카드 (스샷 느낌) ===== */
-.panel {
-  position: fixed;
-  left: 12px; right: 12px; top: 12px;
-  z-index: 1200;
-  pointer-events: none;
+/* =========================
+   ✅ 상단 UI: "배경 없이 떠있는 느낌"
+========================= */
+.uiTop{
+  position:fixed;
+  left:14px; right:14px; top:12px;
+  z-index:1200;
+  pointer-events:none;
 }
-.card {
-  pointer-events: auto;
-  background: rgba(255,255,255,.92);
-  border-radius: 16px;
-  box-shadow: 0 12px 26px rgba(0,0,0,.14);
-  border: 1px solid rgba(0,0,0,.06);
-  padding: 14px 14px 12px;
+
+/* 제목 줄 */
+.uiRow1{
+  pointer-events:auto;
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:10px;
 }
-.headerRow{
-  display:flex; align-items:flex-start; justify-content:space-between; gap:10px;
+.uiTitleBox{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
 }
-.hTitle{
-  font-size:18px; font-weight:900; margin:0;
+.uiTitle{
+  font-size:18px;
+  font-weight:1000;
+  color:#111;
+  text-shadow: 0 2px 10px rgba(0,0,0,.10);
 }
-.hSub{
-  font-size:13px; color:#666; margin-top:4px; font-weight:700;
+.uiCount{
+  font-size:13px;
+  font-weight:900;
+  color:#444;
+  text-shadow: 0 2px 10px rgba(255,255,255,.35);
 }
-.nearToggle{
-  display:flex; align-items:center; gap:10px;
+
+/* 내주변 500m 체크(작게) */
+.nearWrap{
+  pointer-events:auto;
+  display:flex;
+  align-items:center;
+  gap:10px;
 }
-.checkWrap{
-  display:flex; align-items:center; gap:8px;
-  font-size:14px; font-weight:900;
+.nearCheck{
+  display:flex;
+  align-items:center;
+  gap:10px;
   user-select:none;
+  font-weight:1000;
+  color:#111;
+  text-shadow: 0 2px 10px rgba(0,0,0,.10);
 }
-.checkBox{
-  width:22px; height:22px; border-radius:6px;
-  border:2px solid #cfd3d8;
+.nearBox{
+  width:26px; height:26px;
+  border-radius:8px;
   background:#fff;
-  display:flex; align-items:center; justify-content:center;
+  border:1px solid rgba(0,0,0,.08);
+  box-shadow:0 10px 18px rgba(0,0,0,.12);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:16px;
+  font-weight:1200;
+  color:#03c75a;
 }
-.checkBox.on{
-  border-color:#03c75a;
+.nearBox.on{
   background:#03c75a;
   color:#fff;
 }
-.countPill{
-  margin-top:8px;
-  display:inline-block;
-  font-size:12px;
+
+/* 카테고리 라벨 */
+.uiRow2{
+  pointer-events:auto;
+  margin-top:10px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  color:#111;
+  text-shadow: 0 2px 10px rgba(0,0,0,.10);
+}
+.uiCatTitle{
+  font-size:16px;
+  font-weight:1000;
+}
+.uiCatStatus{
+  font-size:13px;
   font-weight:900;
   color:#333;
 }
 
-/* ===== 카테고리 영역 ===== */
-.catTitleRow{
-  margin-top:12px;
-  display:flex; align-items:center; justify-content:space-between;
-  color:#111;
-}
-.catTitle{
-  font-size:16px; font-weight:900;
-}
-.catAllTxt{
-  font-size:13px; color:#555; font-weight:800;
-}
-
-.chips {
-  margin-top:10px;
+/* =========================
+   ✅ 카테고리 칩: 흰박스 없애고, "한 줄 가로 스크롤"
+========================= */
+.chipRow{
+  pointer-events:auto;
+  margin-top:8px;
   display:flex;
   gap:10px;
-  flex-wrap:wrap;
+  overflow-x:auto;
+  overflow-y:hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom:6px;
 }
+.chipRow::-webkit-scrollbar{ height:6px; }
+.chipRow::-webkit-scrollbar-thumb{ background:rgba(0,0,0,.12); border-radius:999px; }
 
 .chip{
-  display:flex; align-items:center; gap:8px;
+  flex:0 0 auto;
+  display:flex;
+  align-items:center;
+  gap:8px;
   padding:10px 14px;
   border-radius:999px;
-  background:#f3f4f6;
+  background:rgba(255,255,255,.92);
   border:1px solid rgba(0,0,0,.06);
-  font-size:14px;
-  font-weight:900;
+  box-shadow:0 10px 18px rgba(0,0,0,.10);
+  font-size:15px;
+  font-weight:1000;
+  color:#111;
   user-select:none;
   cursor:pointer;
 }
-.chip .e{ font-size:16px; }
+.chip .e{ font-size:18px; }
 .chip.active{
   background:#03c75a;
   color:#fff;
 }
-.chip.active .e{ filter: brightness(2); }
+.chip.active .e{ filter:brightness(2); }
 
-/* ===== 우하단 버튼 (스샷 느낌) ===== */
+/* =========================
+   ✅ 우하단 버튼 크기: 스샷처럼 "덜 큼"
+========================= */
 .fabSubmit{
   position:fixed;
   right:16px; bottom:22px;
-  width:86px; height:86px;
+  width:74px; height:74px;
   border-radius:999px;
   border:0;
   background:#03c75a;
   color:#fff;
-  font-weight:1000;
+  font-weight:1100;
   font-size:20px;
-  box-shadow:0 14px 26px rgba(0,0,0,.22);
+  box-shadow:0 16px 24px rgba(0,0,0,.22);
   cursor:pointer;
   z-index:1300;
 }
 .fabMe{
   position:fixed;
-  right:22px; bottom:118px;
-  width:48px; height:48px;
+  right:22px; bottom:112px;
+  width:46px; height:46px;
   border-radius:999px;
   border:0;
-  background:#fff;
-  box-shadow:0 12px 22px rgba(0,0,0,.18);
+  background:rgba(255,255,255,.95);
+  box-shadow:0 14px 22px rgba(0,0,0,.18);
   cursor:pointer;
   z-index:1300;
   display:flex; align-items:center; justify-content:center;
   font-size:20px;
 }
 
-/* ===== 바텀시트 ===== */
+/* =========================
+   바텀시트 (가게/댓글)
+========================= */
 .sheet {
   position: fixed; left:0; right:0; bottom:0;
   background:#fff;
@@ -146,7 +190,7 @@ html, body { margin:0; padding:0; height:100%; font-family:-apple-system,BlinkMa
   position:absolute; top:14px; right:16px;
   font-size:22px; color:#999; cursor:pointer;
 }
-.title { font-weight:900; font-size:16px; padding-right:30px; }
+.title { font-weight:1100; font-size:16px; padding-right:30px; }
 .addr { font-size:13px; color:#555; margin-top:4px; }
 .desc { margin-top:10px; font-size:13px; color:#222; line-height:1.35; }
 .nick { margin-top:6px; font-size:12px; color:#666; }
@@ -160,19 +204,19 @@ html, body { margin:0; padding:0; height:100%; font-family:-apple-system,BlinkMa
   color:#fff;
   text-align:center;
   border-radius:12px;
-  font-weight:900;
+  font-weight:1000;
   cursor:pointer;
 }
 
 .comments { margin-top:12px; border-top:1px solid #eee; padding-top:12px; }
 .c-item{ padding:8px 0; border-bottom:1px solid #f0f0f0; }
 .c-head{ display:flex; justify-content:space-between; gap:10px; }
-.c-nick{ font-weight:900; font-size:12px; color:#111; }
+.c-nick{ font-weight:1000; font-size:12px; color:#111; }
 .c-time{ font-size:11px; color:#777; }
 .c-body{ margin-top:4px; font-size:13px; color:#222; line-height:1.35; }
 .c-form{ display:flex; gap:8px; margin-top:10px; }
 .c-form input{ flex:1; border:1px solid #ddd; border-radius:12px; padding:10px; font-size:13px; }
-.c-form button{ border:0; border-radius:12px; padding:10px 12px; background:#111; color:#fff; font-weight:900; }
+.c-form button{ border:0; border-radius:12px; padding:10px 12px; background:#111; color:#fff; font-weight:1000; }
 
 .toast{
   position:fixed; left:50%; bottom:18px; transform:translateX(-50%);
@@ -186,30 +230,28 @@ html, body { margin:0; padding:0; height:100%; font-family:-apple-system,BlinkMa
 <body>
 <div id="map"></div>
 
-<!-- 상단 패널 -->
-<div class="panel">
-  <div class="card">
-    <div class="headerRow">
-      <div>
-        <div class="hTitle">장항지구 맛집지도</div>
-        <div class="hSub" id="countText">표시 0개</div>
-      </div>
-
-      <div class="nearToggle">
-        <div class="checkWrap" onclick="toggleNear()">
-          <div class="checkBox" id="nearBox">✓</div>
-          <div>내주변 500m</div>
-        </div>
-      </div>
+<!-- ✅ 상단 UI -->
+<div class="uiTop">
+  <div class="uiRow1">
+    <div class="uiTitleBox">
+      <div class="uiTitle">장항지구 맛집지도</div>
+      <div class="uiCount" id="countText">표시 0개</div>
     </div>
 
-    <div class="catTitleRow">
-      <div class="catTitle">카테고리</div>
-      <div class="catAllTxt" id="catStatus">전체</div>
+    <div class="nearWrap">
+      <div class="nearCheck" onclick="toggleNear()">
+        <div class="nearBox on" id="nearBox">✓</div>
+        <div style="font-size:16px;font-weight:1100;">내주변 500m</div>
+      </div>
     </div>
-
-    <div class="chips" id="chips"></div>
   </div>
+
+  <div class="uiRow2">
+    <div class="uiCatTitle">카테고리</div>
+    <div class="uiCatStatus" id="catStatus">전체</div>
+  </div>
+
+  <div class="chipRow" id="chips"></div>
 </div>
 
 <!-- 우하단 버튼 -->
@@ -227,7 +269,7 @@ html, body { margin:0; padding:0; height:100%; font-family:-apple-system,BlinkMa
   <div class="btn" onclick="openNaverMap()">네이버지도에서 보기</div>
 
   <div class="comments">
-    <div style="font-weight:900;margin-bottom:6px;">댓글</div>
+    <div style="font-weight:1000;margin-bottom:6px;">댓글</div>
     <div id="cList" style="color:#777;font-size:13px;">가게를 선택하면 댓글이 보여요</div>
     <div class="c-form">
       <input id="cNick" placeholder="닉네임" maxlength="20" />
@@ -258,10 +300,9 @@ let myPos = null;
 let myCircle = null;
 
 // UI 상태
-let nearOnly = true; // 기본: 내주변 500m ON (스샷 느낌)
-let selectedCats = new Set(); // 복수 선택 (전체는 set 비움)
+let nearOnly = true; // 기본: 내주변 500m ON
+let selectedCats = new Set(); // 복수 선택
 
-// 카테고리(스샷처럼 몇 개만 먼저)
 const CATEGORY_MASTER = [
   { key:"전체", emoji:"✨" },
   { key:"한식", emoji:"🍚" },
@@ -293,7 +334,6 @@ function esc(s){
 function parseList(str){
   return String(str||"").split(",").map(s=>s.trim()).filter(Boolean);
 }
-
 function pickEmoji(item){
   const cats = parseList(item.category);
   for(const c of cats){
@@ -302,7 +342,7 @@ function pickEmoji(item){
   return CAT_EMOJI["기타"];
 }
 
-// 줌 14 이하면 라벨 숨김
+// ✅ 줌 14 이하면 라벨 숨김
 function markerHtml(item, showLabel){
   const emoji = pickEmoji(item);
   return `
@@ -315,8 +355,8 @@ function markerHtml(item, showLabel){
       ">${emoji}</div>
       ${showLabel ? `
         <div style="
-          max-width:220px;background:#fff;padding:6px 10px;border-radius:999px;
-          font-size:12px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+          max-width:200px;background:#fff;padding:6px 10px;border-radius:999px;
+          font-size:12px;font-weight:1000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
           box-shadow:0 10px 22px rgba(0,0,0,.18);border:1px solid rgba(0,0,0,.06);
         ">${esc(item.name)}</div>
       ` : ``}
@@ -333,11 +373,9 @@ function initChips(){
     el.className = "chip";
     el.innerHTML = `<span class="e">${c.emoji}</span><span>${c.key}</span>`;
     el.onclick = () => toggleCat(c.key, el);
-
     if(c.key === "전체") el.classList.add("active");
     wrap.appendChild(el);
   });
-
   refreshNearUI();
   refreshCatStatusText();
 }
@@ -384,7 +422,6 @@ function toggleNear(){
   refreshNearUI();
   applyFiltersAndRender();
 }
-
 function refreshNearUI(){
   const box = document.getElementById("nearBox");
   if(nearOnly){
@@ -420,7 +457,7 @@ async function initMap(){
   });
 
   await loadRestaurants();
-  startWatchLocation(); // 500m 자동갱신을 위해
+  startWatchLocation(); // 500m 자동갱신
 }
 
 async function loadRestaurants(){
@@ -441,8 +478,9 @@ async function loadRestaurants(){
 }
 
 function applyFiltersAndRender(){
-  // 1) 카테고리
   let temp = allRestaurants.slice();
+
+  // 1) 카테고리
   if(selectedCats.size > 0){
     temp = temp.filter(item=>{
       const cats = new Set(parseList(item.category));
@@ -453,7 +491,7 @@ function applyFiltersAndRender(){
     });
   }
 
-  // 2) 500m(nearOnly ON이면 걸러서 표시)
+  // 2) 500m
   if(nearOnly && myPos){
     temp = temp.filter(item=>{
       const d = haversineM(myPos, {lat:item.lat, lng:item.lng});
@@ -467,10 +505,7 @@ function applyFiltersAndRender(){
 }
 
 function updateCounts(){
-  // 표시 n개
   document.getElementById("countText").textContent = `표시 ${filteredRestaurants.length}개`;
-
-  // 500m pill은 "내주변 500m" 라벨이니까 별도 숫자 굳이 안 붙임(스샷 그대로)
 }
 
 function renderMarkers(){
@@ -499,14 +534,12 @@ function renderMarkers(){
 /* ===== 위치/500m 자동갱신 ===== */
 function startWatchLocation(){
   if(!navigator.geolocation) return;
-
   if(watchId !== null) return;
 
   watchId = navigator.geolocation.watchPosition(
     (pos)=>{
       myPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
       drawMyCircle();
-      // nearOnly ON이면 이동할 때마다 필터 자동 갱신
       applyFiltersAndRender();
     },
     (err)=>{ console.warn("위치 오류:", err); },
@@ -545,7 +578,6 @@ function haversineM(a, b){
 
 function moveToMe(){
   if(!navigator.geolocation) return toast("위치 지원 안 됨");
-
   navigator.geolocation.getCurrentPosition(
     (pos)=>{
       myPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
@@ -592,7 +624,7 @@ function showSheet(item){
 }
 function closeSheet(){ document.getElementById("sheet").classList.remove("show"); }
 
-/* 네이버지도에서 보기: placeUrl 우선 */
+/* ✅ 네이버지도에서 보기: placeUrl 우선 */
 function openNaverMap(){
   if(!selected) return;
   const placeUrl = String(selected.placeUrl||"").trim();
