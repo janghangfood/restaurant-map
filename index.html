@@ -14,7 +14,7 @@
 html, body { margin:0; padding:0; height:100%; font-family:-apple-system, BlinkMacSystemFont, 'Noto Sans KR'; }
 #map { width:100%; height:100%; position:relative; z-index:1; }
 
-/* ✅ 상단 UI (배경 큰 박스 없이 칩/텍스트만) */
+/* ✅ 상단 UI */
 .topUI{
   position:fixed;
   left:12px; right:12px; top:12px;
@@ -145,7 +145,6 @@ html, body { margin:0; padding:0; height:100%; font-family:-apple-system, BlinkM
   background:#fff;
   border-radius:16px 16px 0 0;
   box-shadow:0 -6px 20px rgba(0,0,0,.2);
-  padding:16px;
   display:none;
   z-index:9998;
   max-height:72vh;
@@ -153,19 +152,17 @@ html, body { margin:0; padding:0; height:100%; font-family:-apple-system, BlinkM
 }
 .sheet.show{ display:block; }
 
-/* ✅ 스크롤해도 닫기 버튼/타이틀 고정 */
+/* ✅ 스크롤해도 닫기/타이틀 고정 */
 .sheetHeader{
   position: sticky;
   top: 0;
+  z-index: 30;
   background:#fff;
-  z-index: 20;
-  padding-top: 2px;
-  padding-bottom: 10px;
+  padding:16px 16px 10px 16px;
+  border-bottom:1px solid rgba(0,0,0,.06);
 }
 .close-btn{
-  position: sticky;
-  top: 12px;
-  margin-left: auto;
+  position:absolute; top:14px; right:14px;
   width:28px; height:28px;
   border-radius:999px;
   border:1px solid rgba(0,0,0,.08);
@@ -173,22 +170,23 @@ html, body { margin:0; padding:0; height:100%; font-family:-apple-system, BlinkM
   cursor:pointer;
   font-size:18px; color:#777;
   display:flex; align-items:center; justify-content:center;
-  z-index: 30;
 }
+.sheetBody{ padding:12px 16px 16px 16px; }
 
 .sheetTitle{ font-weight:900; font-size:16px; padding-right:40px; }
 .addr{ font-size:13px; color:#555; margin-top:4px; }
-.desc{
+.meta{ margin-top:10px; display:flex; gap:6px; flex-wrap:wrap; }
+.pill{ font-size:12px; padding:4px 8px; border-radius:999px; background:#f2f2f2; }
+.descBox{
   margin-top:10px;
   padding:10px 12px;
   border-radius:12px;
   background:#f6f7f9;
+  border:1px solid rgba(0,0,0,.06);
   font-size:13px;
-  line-height:1.45;
-  color:#222;
+  line-height:1.4;
+  display:none;
 }
-.meta{ margin-top:10px; display:flex; gap:6px; flex-wrap:wrap; }
-.pill{ font-size:12px; padding:4px 8px; border-radius:999px; background:#f2f2f2; }
 
 .btn{
   margin-top:12px;
@@ -240,13 +238,19 @@ textarea.input{ min-height:76px; resize:none; }
   <div class="topRow">
     <div>
       <div class="brand">장항지구 맛집지도</div>
-      <div class="status" id="statusText">불러오는 중…</div>
+      <div class="status" id="statusText">장항지구</div>
     </div>
     <div class="controls">
-      <!-- ✅ 기본 OFF (장항지구 고정) -->
+      <!-- ✅ 기본 OFF -->
       <div id="nearBtn" class="toggleBtn" title="내주변 500m">
         <span class="toggleDot"></span>
         <span>내주변 500m</span>
+      </div>
+
+      <!-- ✅ 추가: 인증맛집만 보기 -->
+      <div id="verBtn" class="toggleBtn" title="인증맛집만">
+        <span class="toggleDot"></span>
+        <span>⭐ 인증만</span>
       </div>
     </div>
   </div>
@@ -254,7 +258,7 @@ textarea.input{ min-height:76px; resize:none; }
   <div class="chipBar" id="chips"></div>
 </div>
 
-<!-- ✅ 현재 위치 버튼 -->
+<!-- ✅ 현재 위치 버튼 (1회만 잡음) -->
 <button class="locBtn" id="btnMyLoc" type="button" title="현재 위치로">⦿</button>
 
 <!-- ✅ 제보 버튼 -->
@@ -268,32 +272,32 @@ textarea.input{ min-height:76px; resize:none; }
     <div class="addr" id="sAddr"></div>
   </div>
 
-  <!-- ✅ 소개(desc) -->
-  <div class="desc" id="sDesc" style="display:none;"></div>
+  <div class="sheetBody">
+    <div class="meta" id="sMeta"></div>
+    <div class="descBox" id="sDesc"></div>
 
-  <div class="meta" id="sMeta"></div>
+    <button class="btn" id="btnOpenNaver" type="button">네이버지도에서 보기</button>
 
-  <button class="btn" id="btnOpenNaver" type="button">네이버지도에서 보기</button>
+    <div class="cmtBox">
+      <div class="cmtHeader">댓글</div>
+      <div class="cmtList" id="cmtList"></div>
+      <div class="mini" id="cmtStatus"></div>
 
-  <div class="cmtBox">
-    <div class="cmtHeader">댓글</div>
-    <div class="cmtList" id="cmtList"></div>
-    <div class="mini" id="cmtStatus"></div>
-
-    <div class="formRow">
-      <input class="input" id="nickInput" placeholder="닉네임" maxlength="20" />
+      <div class="formRow">
+        <input class="input" id="nickInput" placeholder="닉네임" maxlength="20" />
+      </div>
+      <div class="formRow">
+        <textarea class="input" id="contentInput" placeholder="댓글을 남겨주세요" maxlength="300"></textarea>
+      </div>
+      <button class="btn secondary" id="btnAddComment" type="button">댓글 달기</button>
     </div>
-    <div class="formRow">
-      <textarea class="input" id="contentInput" placeholder="댓글을 남겨주세요" maxlength="300"></textarea>
-    </div>
-    <button class="btn secondary" id="btnAddComment" type="button">댓글 달기</button>
   </div>
 </div>
 
 <script>
 /******** 설정 ********/
 const API_URL = "https://twilight-art-ed3c.wlalsqqq.workers.dev"; // ✅ Worker 주소
-const REPORT_URL = "./submit.html"; // ✅ repo에 submit.html
+const REPORT_URL = "./submit.html"; // ✅ 제보 페이지
 /************************/
 
 let map = null;
@@ -308,20 +312,18 @@ const nickInputEl = document.getElementById("nickInput");
 const contentInputEl = document.getElementById("contentInput");
 
 const nearBtnEl = document.getElementById("nearBtn");
+const verBtnEl  = document.getElementById("verBtn");
 
-/* ✅ 기본: 장항지구 고정(내주변 OFF) */
-let useNear = false;
+let useNear = false;       // ✅ 기본 OFF
+let onlyVerified = false;  // ✅ 기본 OFF
 
-/* 마커/데이터 */
 const markers = []; // { marker, item }
 let allData = [];
-
-/* 위치 관련: 500m ON일 때만 추적 */
 let userPos = null; // {lat, lng}
 let myMarker = null;
 let myCircle = null;
-let watchId = null;
-let locating = false;
+
+let watchId = null; // ✅ 500m ON일 때만 watchPosition
 
 /* =========================
    카테고리 → 대표 이모지 1개
@@ -356,7 +358,7 @@ function esc(s){
     .replaceAll("'","&#039;");
 }
 
-/* ✅ 마커 아이콘 크기/앵커 고정 */
+/* ✅ 아이콘 크기/앵커: 줌마다 위치 튀는 것 방지 (CSS transform 기준이므로 anchor 0,0) */
 const ICON_W = 110, ICON_H = 110;
 function iconSize(){ return new naver.maps.Size(ICON_W, ICON_H); }
 function iconAnchor(){ return new naver.maps.Point(0, 0); }
@@ -364,14 +366,21 @@ function iconAnchor(){ return new naver.maps.Point(0, 0); }
 function markerHtml(item, showLabel){
   const main = pickMainCategory(item.category);
   const emoji = emojiOf(main);
+
+  const isVerified = String(item.tier || "reported") === "verified";
+  const badge = isVerified ? `<div style="position:absolute; right:-6px; top:-6px; font-size:14px;">⭐</div>` : "";
+
   return `
     <div style="transform: translate(-50%, -100%); display:flex; flex-direction:column; align-items:center; gap:6px; pointer-events:auto;">
-      <div style="
-        width:38px; height:38px; border-radius:19px;
-        background:#fff; display:flex; align-items:center; justify-content:center;
-        font-size:22px; box-shadow:0 8px 20px rgba(0,0,0,.22);
-        border:1px solid rgba(0,0,0,.06);
-      ">${emoji}</div>
+      <div style="position:relative;">
+        <div style="
+          width:38px; height:38px; border-radius:19px;
+          background:#fff; display:flex; align-items:center; justify-content:center;
+          font-size:22px; box-shadow:0 8px 20px rgba(0,0,0,.22);
+          border:1px solid rgba(0,0,0,.06);
+        ">${emoji}</div>
+        ${badge}
+      </div>
       ${showLabel ? `
         <div style="
           max-width:200px; background:#fff; padding:6px 10px; border-radius:999px;
@@ -467,6 +476,14 @@ function matchCategory(item){
 }
 
 /* =========================
+   등급 필터
+========================= */
+function matchTier(item){
+  if (!onlyVerified) return true;
+  return String(item.tier || "reported") === "verified";
+}
+
+/* =========================
    UI 이벤트
 ========================= */
 nearBtnEl.addEventListener("click", async ()=>{
@@ -474,11 +491,18 @@ nearBtnEl.addEventListener("click", async ()=>{
   nearBtnEl.classList.toggle("on", useNear);
 
   if (useNear) {
-    await ensureLocationTracking(); // ✅ ON일 때만 위치 추적 시작
+    await ensureLocationTracking();
   } else {
-    stopLocationTracking(); // ✅ OFF면 추적 중지 + 원/마커 제거
+    stopLocationTracking();
+    statusTextEl.textContent = `장항지구 (표시 ${getLastRenderedCount()}개)`;
   }
 
+  applyFiltersAndRender();
+});
+
+verBtnEl.addEventListener("click", ()=>{
+  onlyVerified = !onlyVerified;
+  verBtnEl.classList.toggle("on", onlyVerified);
   applyFiltersAndRender();
 });
 
@@ -486,23 +510,21 @@ document.getElementById("fabReport").addEventListener("click", ()=>{
   window.location.href = REPORT_URL;
 });
 
-/* ✅ 현재 위치 버튼: 500m와 무관하게 1회 위치 잡아서 이동만 */
-document.getElementById("btnMyLoc").addEventListener("click", async ()=>{
-  if (!map) return;
-
-  if (!userPos) {
-    await ensureSingleLocationFix();
-  }
-  if (!userPos) {
-    alert("현재 위치를 못 찾았어요. 위치 권한을 허용해줘!");
-    return;
-  }
-
-  map.panTo(new naver.maps.LatLng(userPos.lat, userPos.lng));
-  if (map.getZoom() < 16) map.setZoom(16, true);
+// ✅ 현재 위치 버튼은 1회만
+document.getElementById("btnMyLoc").addEventListener("click", ()=>{
+  if (!navigator.geolocation) return alert("이 기기에서 위치 사용 불가");
+  navigator.geolocation.getCurrentPosition(
+    (pos)=>{
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      map.panTo(new naver.maps.LatLng(lat, lng));
+      if (map.getZoom() < 16) map.setZoom(16, true);
+    },
+    ()=> alert("현재 위치를 못 잡았어요. 위치 권한을 허용해줘!"),
+    { enableHighAccuracy:true, timeout:8000, maximumAge:5000 }
+  );
 });
 
-/* ✅ 바텀시트 버튼들 */
 document.getElementById("btnCloseSheet").addEventListener("click", closeSheet);
 document.getElementById("btnOpenNaver").addEventListener("click", openNaverMap);
 document.getElementById("btnAddComment").addEventListener("click", addCommentFromUI);
@@ -526,124 +548,66 @@ function initMap(){
   naver.maps.Event.addListener(map, "zoom_changed", () => updateMarkerIcons());
 
   loadRestaurants();
-
-  // ✅ 여기서 위치 추적 시작하지 않음(장항지구 고정)
-  statusTextEl.textContent = "장항지구";
 }
 
 /* =========================
-   위치: 500m ON일 때만 추적
+   위치 추적 (500m ON일 때만)
 ========================= */
 async function ensureLocationTracking(){
-  if (locating) return;
-  locating = true;
-
   if (!navigator.geolocation){
     statusTextEl.textContent = "이 기기에서 위치 사용 불가";
-    locating = false;
     return;
   }
 
   statusTextEl.textContent = "내주변 500m: 위치 확인 중…(허용 눌러줘)";
 
-  // 1) 먼저 현재 위치 1회 확보
-  await new Promise((resolve) => {
-    navigator.geolocation.getCurrentPosition(
-      (pos)=>{
-        userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        updateMyLocationOverlay(); // ✅ ON이면 원/점 표시
-        statusTextEl.textContent = "내주변 500m: ON";
-        resolve();
-      },
-      (err)=>{
-        console.warn("위치 실패:", err);
-        if (err.code === 1) statusTextEl.textContent = "내주변 500m: 위치 권한 필요";
-        else if (err.code === 3) statusTextEl.textContent = "내주변 500m: 위치가 늦게 잡혀요";
-        else statusTextEl.textContent = "내주변 500m: 위치 사용 불가";
-        resolve();
-      },
-      { enableHighAccuracy:true, timeout:12000, maximumAge:5000 }
-    );
-  });
+  // 이미 watch 중이면 유지
+  if (watchId !== null) return;
 
-  // 위치가 없으면 watch 시작 안 함
-  if (!userPos) {
-    locating = false;
-    return;
-  }
-
-  // 2) 이미 watch 중이면 중복 시작 금지
-  if (watchId !== null) {
-    locating = false;
-    return;
-  }
-
-  // 3) 지속 추적 (500m ON 상태에서만)
-  watchId = navigator.geolocation.watchPosition(
-    (pos)=>{
-      userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-      updateMyLocationOverlay();
-      if (useNear) applyFiltersAndRender();
-    },
-    (err)=>{
-      console.warn("watch 오류:", err);
-      if (!useNear) return;
-      if (err.code === 1) statusTextEl.textContent = "내주변 500m: 위치 권한 필요";
-      else if (err.code === 3) statusTextEl.textContent = "내주변 500m: 위치가 늦게 잡혀요";
-      else statusTextEl.textContent = "내주변 500m: 위치 사용 불가";
-    },
-    { enableHighAccuracy:true, timeout:20000, maximumAge:5000 }
-  );
-
-  locating = false;
-}
-
-function stopLocationTracking(){
-  if (watchId !== null && navigator.geolocation){
-    navigator.geolocation.clearWatch(watchId);
-  }
-  watchId = null;
-
-  // ✅ 내 위치 마커/500m 원 숨김
-  if (myMarker) myMarker.setMap(null);
-  if (myCircle) myCircle.setMap(null);
-  myMarker = null;
-  myCircle = null;
-
-  // (선택) OFF하면 위치값도 지우고 싶으면 아래 주석 해제
-  // userPos = null;
-
-  statusTextEl.textContent = "장항지구";
-}
-
-/* ✅ 500m OFF 상태에서 “현재 위치로” 버튼을 누르면 1회 위치 잡기 */
-async function ensureSingleLocationFix(){
-  if (!navigator.geolocation) return;
-
-  statusTextEl.textContent = "현재 위치 확인 중…";
-
+  // 먼저 한번 잡기
   await new Promise((resolve)=>{
     navigator.geolocation.getCurrentPosition(
       (pos)=>{
         userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-
-        // ✅ 500m OFF면 원/마커는 띄우지 않음(원하면 아래 호출)
-        // updateMyLocationOverlay();
-
-        statusTextEl.textContent = "장항지구";
+        updateMyLocationOverlay();
         resolve();
       },
       (err)=>{
-        console.warn(err);
-        statusTextEl.textContent = "장항지구";
+        console.warn("초기 위치 실패:", err);
         resolve();
       },
-      { enableHighAccuracy:true, timeout:12000, maximumAge:5000 }
+      { enableHighAccuracy:true, timeout:8000, maximumAge:5000 }
     );
   });
+
+  // 계속 추적
+  watchId = navigator.geolocation.watchPosition(
+    (pos)=>{
+      userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      updateMyLocationOverlay();
+      applyFiltersAndRender();
+    },
+    (err)=>{
+      console.warn("위치 오류:", err);
+      if (err.code === 1) statusTextEl.textContent = "내주변 500m: 위치 권한 필요(허용 눌러줘)";
+      else if (err.code === 3) statusTextEl.textContent = "내주변 500m: 위치가 늦게 잡혀요(실외/정확한 위치 ON 추천)";
+      else statusTextEl.textContent = "내주변 500m: 위치 사용 불가";
+    },
+    { enableHighAccuracy:true, timeout:20000, maximumAge:5000 }
+  );
 }
 
-/* ✅ 내 위치 점 + 500m 원 (500m ON일 때만 보여주기용) */
+function stopLocationTracking(){
+  if (watchId !== null && navigator.geolocation) {
+    navigator.geolocation.clearWatch(watchId);
+  }
+  watchId = null;
+  userPos = null;
+
+  if (myMarker) { myMarker.setMap(null); myMarker = null; }
+  if (myCircle) { myCircle.setMap(null); myCircle = null; }
+}
+
 function updateMyLocationOverlay(){
   if (!map || !userPos) return;
   const latlng = new naver.maps.LatLng(userPos.lat, userPos.lng);
@@ -694,7 +658,6 @@ function loadRestaurants(){
       allData = json.data || [];
       buildChipsFromData(allData);
       applyFiltersAndRender();
-      if (!useNear) statusTextEl.textContent = `표시 ${allData.length}개`;
     })
     .catch(err=>{
       console.error(err);
@@ -705,6 +668,9 @@ function loadRestaurants(){
 /* =========================
    마커 렌더
 ========================= */
+let lastRenderedCount = 0;
+function getLastRenderedCount(){ return lastRenderedCount || 0; }
+
 function clearMarkers(){
   markers.forEach(m => m.marker.setMap(null));
   markers.length = 0;
@@ -752,6 +718,7 @@ function applyFiltersAndRender(){
   if (!map) return;
 
   const filtered = allData.filter(it=>{
+    if (!matchTier(it)) return false;
     if (!matchCategory(it)) return false;
     if (useNear){
       if (!userPos) return false;
@@ -760,14 +727,11 @@ function applyFiltersAndRender(){
     return true;
   });
 
+  lastRenderedCount = filtered.length;
   renderMarkers(filtered);
 
-  if (useNear) {
-    if (!userPos) statusTextEl.textContent = "내주변 500m: 위치 권한 필요";
-    else statusTextEl.textContent = `표시 ${filtered.length}개 (500m)`;
-  } else {
-    statusTextEl.textContent = `표시 ${filtered.length}개`;
-  }
+  if (useNear && !userPos) statusTextEl.textContent = "내주변 500m: 위치 권한 필요(허용 눌러줘)";
+  else statusTextEl.textContent = `표시 ${filtered.length}개${useNear ? " (500m)" : ""}${onlyVerified ? " (⭐인증)" : ""}`;
 }
 
 /* =========================
@@ -776,6 +740,17 @@ function applyFiltersAndRender(){
 function showSheet(item){
   document.getElementById("sName").textContent = item.name || "";
   document.getElementById("sAddr").textContent = item.address || "";
+
+  const cats = parseCats(item.category);
+  const tags = parseCats(item.tags);
+
+  const pills = [];
+  if (String(item.tier || "reported") === "verified") pills.push(`<span class="pill">⭐ 인증맛집</span>`);
+  else pills.push(`<span class="pill">제보맛집</span>`);
+
+  if (cats.length) pills.push(...cats.map(c => `<span class="pill">${esc(c)}</span>`));
+  if (tags.length) pills.push(...tags.map(t => `<span class="pill">#${esc(t)}</span>`));
+  document.getElementById("sMeta").innerHTML = pills.join("");
 
   // ✅ desc 표시
   const descEl = document.getElementById("sDesc");
@@ -788,14 +763,6 @@ function showSheet(item){
     descEl.textContent = "";
   }
 
-  const cats = parseCats(item.category);
-  const tags = parseCats(item.tags);
-
-  const pills = [];
-  if (cats.length) pills.push(...cats.map(c => `<span class="pill">${esc(c)}</span>`));
-  if (tags.length) pills.push(...tags.map(t => `<span class="pill">#${esc(t)}</span>`));
-
-  document.getElementById("sMeta").innerHTML = pills.join("");
   document.getElementById("sheet").classList.add("show");
 }
 function closeSheet(){
@@ -874,9 +841,7 @@ async function addCommentFromUI(){
 }
 
 /* =========================
-   네이버지도 이동
-   - placeUrl 있으면 그걸로(사용자 요구사항)
-   - 없으면 기존 방식
+   네이버지도 이동 (placeUrl 우선)
 ========================= */
 function openNaverMap(){
   if (!selected) return;
