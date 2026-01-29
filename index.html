@@ -665,7 +665,7 @@ function renderComments(list){
 
   list.forEach(c=>{
     const nick = esc(c.nickname || "익명");
-    const time = esc(c.createdAt || "");
+    const time = esc(String(c.createdAt || ""));
     const content = esc(c.content || "");
     const rating = Number(c.rating);
 
