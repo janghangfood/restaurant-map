@@ -21,7 +21,8 @@ input{padding:10px 12px;border:1px solid #ddd;border-radius:12px;font-size:14px;
 .meta{font-size:12px;color:#555;margin-top:4px;line-height:1.35;}
 .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
 .small{font-size:12px;color:#666;margin-top:6px;}
-.pill{display:inline-block;padding:3px 8px;border-radius:999px;background:#f2f2f2;font-size:11px;margin-right:6px;}
+.pill{async function esc(s){ return String(s||"") }
+display:inline-block;padding:3px 8px;border-radius:999px;background:#f2f2f2;font-size:11px;margin-right:6px;}
 </style>
 </head>
 <body>
@@ -33,7 +34,9 @@ input{padding:10px 12px;border:1px solid #ddd;border-radius:12px;font-size:14px;
       <button class="btn green" onclick="loadPending()">대기목록 불러오기</button>
       <button class="btn dark" onclick="location.href='./'">지도로</button>
     </div>
-    <div class="small">승인 시 restaurants로 복사되고, tier를 선택할 수 있어요. (제보맛집=reported / 인증맛집=verified)</div>
+    <div class="small">
+      승인 시 restaurants로 복사됩니다. (tier는 Code.gs에 반영 로직이 있어야 적용돼요)
+    </div>
   </div>
 
   <div class="card">
@@ -69,10 +72,12 @@ async function loadPending(){
 
     listEl.innerHTML = "";
     data.forEach(item=>{
+      const submissionId = item.id; // ✅ Code.gs(listSubmissions_)는 id로 내려옴
+
       const el = document.createElement("div");
       el.className = "item";
       el.innerHTML = `
-        <div class="title">${esc(item.name)} <span class="pill">${esc(item.submissionId)}</span></div>
+        <div class="title">${esc(item.name)} <span class="pill">${esc(submissionId)}</span></div>
         <div class="meta">
           주소: ${esc(item.address)}<br/>
           카테고리: ${esc(item.category)}<br/>
@@ -85,7 +90,6 @@ async function loadPending(){
         <div class="actions">
           <button class="btn green" data-tier="reported">승인(제보맛집)</button>
           <button class="btn green" data-tier="verified">승인(👑 인증맛집)</button>
-          <button class="btn dark" data-act="reject">거절</button>
         </div>
         <div class="small">※ 승인 후 lat/lng는 restaurants 시트에서 직접 입력</div>
       `;
@@ -93,9 +97,7 @@ async function loadPending(){
       el.querySelectorAll("button").forEach(btn=>{
         btn.onclick = async ()=>{
           const tier = btn.dataset.tier || "";
-          const act = btn.dataset.act || "";
-          if (tier) await approve(adminKey, item.submissionId, tier);
-          else if (act === "reject") await reject(adminKey, item.submissionId);
+          if (tier) await approve(adminKey, submissionId, tier);
         };
       });
 
@@ -117,37 +119,18 @@ async function approve(adminKey, submissionId, tier){
       headers:{ "Content-Type":"application/json" },
       body: JSON.stringify({
         action:"approve",
-        data:{ adminKey, submissionId, tier }
+        adminKey,              // ✅ 최상위로 보내야 Unauthorized 안 뜸
+        data:{ submissionId, tier }
       })
     });
     const json = await res.json();
     if(!json.ok) throw new Error(json.error || "approve fail");
+
     alert("승인 완료!");
     loadPending();
   }catch(e){
     console.error(e);
     alert("승인 실패: " + (e.message || ""));
-  }
-}
-
-async function reject(adminKey, submissionId){
-  const reason = prompt("거절 사유(선택)") || "";
-  try{
-    const res = await fetch(API_URL, {
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({
-        action:"reject",
-        data:{ adminKey, submissionId, reason }
-      })
-    });
-    const json = await res.json();
-    if(!json.ok) throw new Error(json.error || "reject fail");
-    alert("거절 처리 완료!");
-    loadPending();
-  }catch(e){
-    console.error(e);
-    alert("거절 실패: " + (e.message || ""));
   }
 }
 </script>
