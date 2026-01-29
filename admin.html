@@ -3,217 +3,172 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>장항지구 맛집 관리자</title>
+<title>맛집지도 관리자</title>
+<link rel="icon" href="data:,">
 <style>
   body{font-family:-apple-system,BlinkMacSystemFont,"Noto Sans KR",sans-serif;margin:0;background:#f6f7f9;}
   .wrap{max-width:900px;margin:0 auto;padding:18px;}
-  .card{background:#fff;border:1px solid #eee;border-radius:16px;padding:14px;box-shadow:0 6px 20px rgba(0,0,0,.06);}
-  h2{margin:10px 0 12px;font-size:16px;}
-  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
-  input{padding:10px 12px;border:1px solid #ddd;border-radius:12px;font-size:14px;flex:1;min-width:240px;}
-  button{padding:10px 12px;border:0;border-radius:12px;font-weight:900;cursor:pointer;}
-  .btn{background:#03c75a;color:#fff;}
-  .btn2{background:#111;color:#fff;}
-  .btn3{background:#f3f4f6;color:#111;border:1px solid #e5e7eb;}
+  .card{background:#fff;border:1px solid #eee;border-radius:16px;padding:16px;box-shadow:0 6px 20px rgba(0,0,0,.06); margin-bottom:14px;}
+  h1{font-size:18px;margin:0 0 6px;}
+  .sub{font-size:13px;color:#666;margin:0 0 14px;line-height:1.4;}
+  input{width:100%;box-sizing:border-box;padding:12px;border:1px solid #ddd;border-radius:12px;font-size:14px;background:#fff;}
+  .btn{margin-top:10px;padding:10px 12px;border:0;border-radius:12px;background:#03c75a;color:#fff;font-weight:900;cursor:pointer;}
+  .btn.gray{background:#111;}
   table{width:100%;border-collapse:collapse;font-size:13px;}
-  th,td{border-bottom:1px solid #eee;padding:10px;text-align:left;vertical-align:top;}
-  th{background:#fafafa;position:sticky;top:0;z-index:5;}
-  .pill{display:inline-block;padding:3px 8px;border-radius:999px;font-size:12px;background:#f2f2f2;}
-  .pill.v{background:#fff3cd;}
-  .muted{color:#777;font-size:12px;}
+  th,td{border-bottom:1px solid #eee;padding:10px;vertical-align:top;}
+  th{color:#666;text-align:left;font-weight:900;}
+  .rowBtns{display:flex; gap:8px; flex-wrap:wrap;}
+  .pill{font-size:11px; padding:4px 8px; border-radius:999px; background:#f2f2f2; display:inline-block;}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="card">
-    <div class="row">
-      <input id="adminKey" placeholder="관리자 키(ADMIN_KEY)" />
-      <button class="btn" onclick="loadAll()">새로고침</button>
-    </div>
-    <div class="muted" style="margin-top:8px;">* 승인하면 restaurants에 들어가고 tier=reported(제보맛집) / 인증은 tier=verified(인증맛집)</div>
+    <h1>관리자</h1>
+    <p class="sub">1) 아래에 adminKey 입력 → 2) 대기목록 불러오기 → 3) 승인하면 restaurants로 이동</p>
+    <input id="adminKey" placeholder="adminKey 입력" />
+    <button class="btn" onclick="loadSubmissions()">대기목록 불러오기</button>
   </div>
 
-  <div style="height:12px"></div>
-
   <div class="card">
-    <h2>1) 제보 대기 목록 (승인)</h2>
-    <div class="muted" id="subStatus">-</div>
-    <div style="overflow:auto;max-height:45vh;margin-top:10px;">
-      <table>
-        <thead>
-          <tr>
-            <th style="width:120px;">제보ID</th>
-            <th>가게</th>
-            <th>주소</th>
-            <th style="width:110px;">제보일</th>
-            <th style="width:90px;">처리</th>
-          </tr>
-        </thead>
-        <tbody id="subBody"></tbody>
-      </table>
-    </div>
+    <h1>제보 대기 목록 (submissions)</h1>
+    <div id="subStatus" class="sub"></div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:90px;">ID</th>
+          <th>가게</th>
+          <th>주소</th>
+          <th style="width:140px;">시간</th>
+          <th style="width:170px;">처리</th>
+        </tr>
+      </thead>
+      <tbody id="subBody"></tbody>
+    </table>
   </div>
 
-  <div style="height:12px"></div>
-
   <div class="card">
-    <h2>2) 등록된 맛집 (인증/해제)</h2>
-    <div class="muted" id="resStatus">-</div>
-    <div style="overflow:auto;max-height:45vh;margin-top:10px;">
-      <table>
-        <thead>
-          <tr>
-            <th style="width:120px;">ID</th>
-            <th>가게</th>
-            <th style="width:110px;">등급</th>
-            <th style="width:120px;">좌표</th>
-            <th style="width:110px;">등록일</th>
-            <th style="width:160px;">처리</th>
-          </tr>
-        </thead>
-        <tbody id="resBody"></tbody>
-      </table>
+    <h1>등급 변경 (restaurants)</h1>
+    <p class="sub">restaurantId를 넣고 tier를 바꿔요. (reported=제보맛집, verified=인증맛집)</p>
+    <input id="rid" placeholder="restaurantId 예) r_..." />
+    <div class="rowBtns" style="margin-top:10px;">
+      <button class="btn" onclick="setTier('reported')">reported(제보맛집)</button>
+      <button class="btn gray" onclick="setTier('verified')">verified(인증맛집)</button>
     </div>
+    <div id="tierStatus" class="sub"></div>
   </div>
 </div>
 
 <script>
-  // ✅ 여기만 네 Worker 주소로 바꿔
-  const API_URL = "https://twilight-art-ed3c.wlalsqqq.workers.dev";
+const API_URL = "https://twilight-art-ed3c.wlalsqqq.workers.dev";
 
+function esc(s){
+  return String(s||"")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+async function loadSubmissions(){
+  const adminKey = document.getElementById("adminKey").value.trim();
+  if(!adminKey) return alert("adminKey 입력해줘");
+
+  const subStatus = document.getElementById("subStatus");
   const subBody = document.getElementById("subBody");
-  const resBody = document.getElementById("resBody");
+  subBody.innerHTML = "";
+  subStatus.textContent = "불러오는 중…";
 
-  function key(){
-    return document.getElementById("adminKey").value.trim();
-  }
-
-  async function loadAll(){
-    await loadSubmissions();
-    await loadRestaurants();
-    alert("완료");
-  }
-
-  async function loadSubmissions(){
-    document.getElementById("subStatus").textContent = "불러오는 중…";
-    subBody.innerHTML = "";
-    const k = key();
-    const res = await fetch(`${API_URL}?action=submissions&adminKey=${encodeURIComponent(k)}`);
+  try{
+    const res = await fetch(API_URL + `?action=submissions&adminKey=${encodeURIComponent(adminKey)}`);
     const json = await res.json();
-    if(!json.ok){
-      document.getElementById("subStatus").textContent = "실패: " + (json.error||"");
-      return;
-    }
-    document.getElementById("subStatus").textContent = `대기 ${json.data.length}건`;
+    if(!json.ok) throw new Error(json.error || "로드 실패");
+
+    subStatus.textContent = `대기 ${json.data.length}건`;
 
     json.data.forEach(r=>{
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${esc(r.id)}</td>
-        <td><b>${esc(r.name)}</b></td>
+        <td>
+          <b>${esc(r.name)}</b><br/>
+          <span class="pill">${esc(r.category||"")}</span>
+          ${r.nickname ? `<span class="pill">by ${esc(r.nickname)}</span>` : ""}
+          ${r.desc ? `<div style="margin-top:6px;color:#333;">${esc(r.desc)}</div>` : ""}
+          ${r.placeUrl ? `<div style="margin-top:6px;"><a href="${esc(r.placeUrl)}" target="_blank">플레이스</a></div>` : ""}
+        </td>
         <td>${esc(r.address)}</td>
         <td>${esc(r.createdAt)}</td>
         <td>
-          <button class="btn" onclick="approve('${escAttr(r.id)}')">승인</button>
+          <div class="rowBtns">
+            <button class="btn" onclick='approve(${JSON.stringify(r.id)})'>승인</button>
+          </div>
         </td>
       `;
       subBody.appendChild(tr);
     });
-  }
 
-  async function approve(submissionId){
-    const k = key();
+  }catch(e){
+    console.error(e);
+    subStatus.textContent = "오류: " + (e.message||"");
+  }
+}
+
+async function approve(submissionId){
+  const adminKey = document.getElementById("adminKey").value.trim();
+  if(!adminKey) return alert("adminKey 입력해줘");
+
+  if(!confirm("승인할까? (restaurants로 복사됨)")) return;
+
+  try{
     const res = await fetch(API_URL, {
       method:"POST",
       headers:{ "Content-Type":"application/json" },
       body: JSON.stringify({
         action:"approve",
-        adminKey:k,
+        adminKey,
         data:{ submissionId }
       })
     });
     const json = await res.json();
-    if(!json.ok) return alert("승인 실패: " + (json.error||""));
-    await loadAll();
+    if(!json.ok) throw new Error(json.error || "승인 실패");
+
+    alert("승인 완료! (restaurants에 추가됨)\n※ lat/lng는 restaurants 시트에 직접 입력해야 지도에 뜸");
+    loadSubmissions();
+  }catch(e){
+    console.error(e);
+    alert("승인 실패: " + (e.message||""));
   }
+}
 
-  async function loadRestaurants(){
-    document.getElementById("resStatus").textContent = "불러오는 중…";
-    resBody.innerHTML = "";
-    const k = key();
-    const res = await fetch(`${API_URL}?action=restaurants&adminKey=${encodeURIComponent(k)}`);
-    const json = await res.json();
-    if(!json.ok){
-      document.getElementById("resStatus").textContent = "실패: " + (json.error||"");
-      return;
-    }
-    document.getElementById("resStatus").textContent = `${json.data.length}개`;
+async function setTier(tier){
+  const adminKey = document.getElementById("adminKey").value.trim();
+  const restaurantId = document.getElementById("rid").value.trim();
+  const st = document.getElementById("tierStatus");
 
-    json.data.forEach(r=>{
-      const tier = String(r.tier||"reported");
-      const tierHtml = tier==="verified"
-        ? `<span class="pill v">⭐ 인증</span>`
-        : `<span class="pill">제보</span>`;
+  if(!adminKey) return alert("adminKey 입력해줘");
+  if(!restaurantId) return alert("restaurantId 입력해줘");
 
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${esc(r.id)}</td>
-        <td><b>${esc(r.name)}</b></td>
-        <td>${tierHtml}</td>
-        <td class="muted">${esc(r.lat || "-")}, ${esc(r.lng || "-")}</td>
-        <td>${esc(r.createdAt || "")}</td>
-        <td>
-          ${tier==="verified"
-            ? `<button class="btn3" onclick="unverify('${escAttr(r.id)}')">인증해제</button>`
-            : `<button class="btn2" onclick="verify('${escAttr(r.id)}')">⭐ 인증</button>`
-          }
-        </td>
-      `;
-      resBody.appendChild(tr);
-    });
-  }
-
-  async function verify(restaurantId){
-    const k = key();
+  st.textContent = "변경 중…";
+  try{
     const res = await fetch(API_URL, {
       method:"POST",
       headers:{ "Content-Type":"application/json" },
       body: JSON.stringify({
-        action:"verify",
-        adminKey:k,
-        data:{ restaurantId }
+        action:"setTier",
+        adminKey,
+        data:{ restaurantId, tier }
       })
     });
     const json = await res.json();
-    if(!json.ok) return alert("인증 실패: " + (json.error||""));
-    await loadAll();
+    if(!json.ok) throw new Error(json.error || "변경 실패");
+    st.textContent = `완료: ${restaurantId} → ${tier}`;
+  }catch(e){
+    console.error(e);
+    st.textContent = "오류: " + (e.message||"");
   }
-
-  async function unverify(restaurantId){
-    const k = key();
-    const res = await fetch(API_URL, {
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({
-        action:"unverify",
-        adminKey:k,
-        data:{ restaurantId }
-      })
-    });
-    const json = await res.json();
-    if(!json.ok) return alert("해제 실패: " + (json.error||""));
-    await loadAll();
-  }
-
-  function esc(s){
-    return String(s||"")
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;")
-      .replaceAll("'","&#039;");
-  }
-  function escAttr(s){ return esc(s).replaceAll('"','&quot;'); }
+}
 </script>
 </body>
 </html>
