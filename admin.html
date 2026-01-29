@@ -3,123 +3,113 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>맛집지도 관리자</title>
+<title>장항지구 맛집 관리자</title>
 <link rel="icon" href="data:,">
 <style>
-  body{font-family:-apple-system,BlinkMacSystemFont,"Noto Sans KR",sans-serif;margin:0;background:#f6f7f9;}
-  .wrap{max-width:900px;margin:0 auto;padding:18px;}
-  .card{background:#fff;border:1px solid #eee;border-radius:16px;padding:16px;box-shadow:0 6px 20px rgba(0,0,0,.06); margin-bottom:14px;}
-  h1{font-size:18px;margin:0 0 6px;}
-  .sub{font-size:13px;color:#666;margin:0 0 14px;line-height:1.4;}
-  input{width:100%;box-sizing:border-box;padding:12px;border:1px solid #ddd;border-radius:12px;font-size:14px;background:#fff;}
-  .btn{margin-top:10px;padding:10px 12px;border:0;border-radius:12px;background:#03c75a;color:#fff;font-weight:900;cursor:pointer;}
-  .btn.gray{background:#111;}
-  table{width:100%;border-collapse:collapse;font-size:13px;}
-  th,td{border-bottom:1px solid #eee;padding:10px;vertical-align:top;}
-  th{color:#666;text-align:left;font-weight:900;}
-  .rowBtns{display:flex; gap:8px; flex-wrap:wrap;}
-  .pill{font-size:11px; padding:4px 8px; border-radius:999px; background:#f2f2f2; display:inline-block;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Noto Sans KR",sans-serif;margin:0;background:#f6f7f9;}
+.wrap{max-width:760px;margin:0 auto;padding:18px;}
+.card{background:#fff;border:1px solid #eee;border-radius:16px;padding:16px;box-shadow:0 6px 20px rgba(0,0,0,.06);margin-bottom:12px;}
+h1{font-size:18px;margin:0 0 8px;}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+input{padding:10px 12px;border:1px solid #ddd;border-radius:12px;font-size:14px;flex:1;min-width:220px;}
+.btn{padding:10px 12px;border:0;border-radius:12px;font-weight:900;cursor:pointer;}
+.btn.green{background:#03c75a;color:#fff;}
+.btn.dark{background:#111;color:#fff;}
+.list{display:flex;flex-direction:column;gap:10px;}
+.item{border:1px solid rgba(0,0,0,.08);border-radius:14px;padding:12px;}
+.title{font-weight:900;}
+.meta{font-size:12px;color:#555;margin-top:4px;line-height:1.35;}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.small{font-size:12px;color:#666;margin-top:6px;}
+.pill{display:inline-block;padding:3px 8px;border-radius:999px;background:#f2f2f2;font-size:11px;margin-right:6px;}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="card">
-    <h1>관리자</h1>
-    <p class="sub">1) 아래에 adminKey 입력 → 2) 대기목록 불러오기 → 3) 승인하면 restaurants로 이동</p>
-    <input id="adminKey" placeholder="adminKey 입력" />
-    <button class="btn" onclick="loadSubmissions()">대기목록 불러오기</button>
-  </div>
-
-  <div class="card">
-    <h1>제보 대기 목록 (submissions)</h1>
-    <div id="subStatus" class="sub"></div>
-    <table>
-      <thead>
-        <tr>
-          <th style="width:90px;">ID</th>
-          <th>가게</th>
-          <th>주소</th>
-          <th style="width:140px;">시간</th>
-          <th style="width:170px;">처리</th>
-        </tr>
-      </thead>
-      <tbody id="subBody"></tbody>
-    </table>
-  </div>
-
-  <div class="card">
-    <h1>등급 변경 (restaurants)</h1>
-    <p class="sub">restaurantId를 넣고 tier를 바꿔요. (reported=제보맛집, verified=인증맛집)</p>
-    <input id="rid" placeholder="restaurantId 예) r_..." />
-    <div class="rowBtns" style="margin-top:10px;">
-      <button class="btn" onclick="setTier('reported')">reported(제보맛집)</button>
-      <button class="btn gray" onclick="setTier('verified')">verified(인증맛집)</button>
+    <h1>맛집 제보 대기목록 (관리자)</h1>
+    <div class="row">
+      <input id="adminKey" placeholder="관리자 비밀번호(adminKey) 입력" />
+      <button class="btn green" onclick="loadPending()">대기목록 불러오기</button>
+      <button class="btn dark" onclick="location.href='./'">지도로</button>
     </div>
-    <div id="tierStatus" class="sub"></div>
+    <div class="small">승인 시 restaurants로 복사되고, tier를 선택할 수 있어요. (제보맛집=reported / 인증맛집=verified)</div>
+  </div>
+
+  <div class="card">
+    <div class="list" id="list"></div>
   </div>
 </div>
 
 <script>
 const API_URL = "https://twilight-art-ed3c.wlalsqqq.workers.dev";
+const listEl = document.getElementById("list");
 
 function esc(s){
   return String(s||"")
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
+    .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;").replaceAll("'","&#039;");
 }
 
-async function loadSubmissions(){
+async function loadPending(){
   const adminKey = document.getElementById("adminKey").value.trim();
-  if(!adminKey) return alert("adminKey 입력해줘");
+  if(!adminKey) return alert("adminKey를 입력해줘");
 
-  const subStatus = document.getElementById("subStatus");
-  const subBody = document.getElementById("subBody");
-  subBody.innerHTML = "";
-  subStatus.textContent = "불러오는 중…";
-
+  listEl.innerHTML = "불러오는 중…";
   try{
-    const res = await fetch(API_URL + `?action=submissions&adminKey=${encodeURIComponent(adminKey)}`);
+    const res = await fetch(API_URL + "?action=submissions&adminKey=" + encodeURIComponent(adminKey));
     const json = await res.json();
-    if(!json.ok) throw new Error(json.error || "로드 실패");
+    if(!json.ok) throw new Error(json.error || "load fail");
 
-    subStatus.textContent = `대기 ${json.data.length}건`;
+    const data = json.data || [];
+    if(data.length === 0){
+      listEl.innerHTML = "<div class='small'>대기목록이 없어요.</div>";
+      return;
+    }
 
-    json.data.forEach(r=>{
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${esc(r.id)}</td>
-        <td>
-          <b>${esc(r.name)}</b><br/>
-          <span class="pill">${esc(r.category||"")}</span>
-          ${r.nickname ? `<span class="pill">by ${esc(r.nickname)}</span>` : ""}
-          ${r.desc ? `<div style="margin-top:6px;color:#333;">${esc(r.desc)}</div>` : ""}
-          ${r.placeUrl ? `<div style="margin-top:6px;"><a href="${esc(r.placeUrl)}" target="_blank">플레이스</a></div>` : ""}
-        </td>
-        <td>${esc(r.address)}</td>
-        <td>${esc(r.createdAt)}</td>
-        <td>
-          <div class="rowBtns">
-            <button class="btn" onclick='approve(${JSON.stringify(r.id)})'>승인</button>
-          </div>
-        </td>
+    listEl.innerHTML = "";
+    data.forEach(item=>{
+      const el = document.createElement("div");
+      el.className = "item";
+      el.innerHTML = `
+        <div class="title">${esc(item.name)} <span class="pill">${esc(item.submissionId)}</span></div>
+        <div class="meta">
+          주소: ${esc(item.address)}<br/>
+          카테고리: ${esc(item.category)}<br/>
+          태그: ${esc(item.tags)}<br/>
+          소개: ${esc(item.desc)}<br/>
+          닉네임: ${esc(item.nickname)}<br/>
+          플레이스: ${item.placeUrl ? `<a href="${esc(item.placeUrl)}" target="_blank">열기</a>` : "없음"}<br/>
+          작성: ${esc(item.createdAt)}
+        </div>
+        <div class="actions">
+          <button class="btn green" data-tier="reported">승인(제보맛집)</button>
+          <button class="btn green" data-tier="verified">승인(👑 인증맛집)</button>
+          <button class="btn dark" data-act="reject">거절</button>
+        </div>
+        <div class="small">※ 승인 후 lat/lng는 restaurants 시트에서 직접 입력</div>
       `;
-      subBody.appendChild(tr);
+
+      el.querySelectorAll("button").forEach(btn=>{
+        btn.onclick = async ()=>{
+          const tier = btn.dataset.tier || "";
+          const act = btn.dataset.act || "";
+          if (tier) await approve(adminKey, item.submissionId, tier);
+          else if (act === "reject") await reject(adminKey, item.submissionId);
+        };
+      });
+
+      listEl.appendChild(el);
     });
 
   }catch(e){
     console.error(e);
-    subStatus.textContent = "오류: " + (e.message||"");
+    listEl.innerHTML = "<div class='small'>불러오기 실패: " + esc(e.message) + "</div>";
   }
 }
 
-async function approve(submissionId){
-  const adminKey = document.getElementById("adminKey").value.trim();
-  if(!adminKey) return alert("adminKey 입력해줘");
-
-  if(!confirm("승인할까? (restaurants로 복사됨)")) return;
+async function approve(adminKey, submissionId, tier){
+  if(!confirm(`승인할까?\nsubmissionId=${submissionId}\ntier=${tier}`)) return;
 
   try{
     const res = await fetch(API_URL, {
@@ -127,46 +117,37 @@ async function approve(submissionId){
       headers:{ "Content-Type":"application/json" },
       body: JSON.stringify({
         action:"approve",
-        adminKey,
-        data:{ submissionId }
+        data:{ adminKey, submissionId, tier }
       })
     });
     const json = await res.json();
-    if(!json.ok) throw new Error(json.error || "승인 실패");
-
-    alert("승인 완료! (restaurants에 추가됨)\n※ lat/lng는 restaurants 시트에 직접 입력해야 지도에 뜸");
-    loadSubmissions();
+    if(!json.ok) throw new Error(json.error || "approve fail");
+    alert("승인 완료!");
+    loadPending();
   }catch(e){
     console.error(e);
-    alert("승인 실패: " + (e.message||""));
+    alert("승인 실패: " + (e.message || ""));
   }
 }
 
-async function setTier(tier){
-  const adminKey = document.getElementById("adminKey").value.trim();
-  const restaurantId = document.getElementById("rid").value.trim();
-  const st = document.getElementById("tierStatus");
-
-  if(!adminKey) return alert("adminKey 입력해줘");
-  if(!restaurantId) return alert("restaurantId 입력해줘");
-
-  st.textContent = "변경 중…";
+async function reject(adminKey, submissionId){
+  const reason = prompt("거절 사유(선택)") || "";
   try{
     const res = await fetch(API_URL, {
       method:"POST",
       headers:{ "Content-Type":"application/json" },
       body: JSON.stringify({
-        action:"setTier",
-        adminKey,
-        data:{ restaurantId, tier }
+        action:"reject",
+        data:{ adminKey, submissionId, reason }
       })
     });
     const json = await res.json();
-    if(!json.ok) throw new Error(json.error || "변경 실패");
-    st.textContent = `완료: ${restaurantId} → ${tier}`;
+    if(!json.ok) throw new Error(json.error || "reject fail");
+    alert("거절 처리 완료!");
+    loadPending();
   }catch(e){
     console.error(e);
-    st.textContent = "오류: " + (e.message||"");
+    alert("거절 실패: " + (e.message || ""));
   }
 }
 </script>
