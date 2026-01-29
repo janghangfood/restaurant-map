@@ -21,8 +21,8 @@ input{padding:10px 12px;border:1px solid #ddd;border-radius:12px;font-size:14px;
 .meta{font-size:12px;color:#555;margin-top:4px;line-height:1.35;}
 .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
 .small{font-size:12px;color:#666;margin-top:6px;}
-.pill{async function esc(s){ return String(s||"") }
-display:inline-block;padding:3px 8px;border-radius:999px;background:#f2f2f2;font-size:11px;margin-right:6px;}
+.pill{display:inline-block;padding:3px 8px;border-radius:999px;background:#f2f2f2;font-size:11px;margin-right:6px;}
+a{color:#03c75a;text-decoration:none;font-weight:700;}
 </style>
 </head>
 <body>
@@ -34,9 +34,7 @@ display:inline-block;padding:3px 8px;border-radius:999px;background:#f2f2f2;font
       <button class="btn green" onclick="loadPending()">대기목록 불러오기</button>
       <button class="btn dark" onclick="location.href='./'">지도로</button>
     </div>
-    <div class="small">
-      승인 시 restaurants로 복사됩니다. (tier는 Code.gs에 반영 로직이 있어야 적용돼요)
-    </div>
+    <div class="small">승인 시 restaurants로 복사됩니다. (lat/lng는 restaurants 시트에서 직접 입력)</div>
   </div>
 
   <div class="card">
@@ -72,7 +70,8 @@ async function loadPending(){
 
     listEl.innerHTML = "";
     data.forEach(item=>{
-      const submissionId = item.id; // ✅ Code.gs(listSubmissions_)는 id로 내려옴
+      // ✅ 여기 핵심: Code.gs는 submissions 목록에서 id로 내려줌
+      const submissionId = String(item.id || item.submissionId || "").trim();
 
       const el = document.createElement("div");
       el.className = "item";
@@ -91,13 +90,13 @@ async function loadPending(){
           <button class="btn green" data-tier="reported">승인(제보맛집)</button>
           <button class="btn green" data-tier="verified">승인(👑 인증맛집)</button>
         </div>
-        <div class="small">※ 승인 후 lat/lng는 restaurants 시트에서 직접 입력</div>
       `;
 
       el.querySelectorAll("button").forEach(btn=>{
         btn.onclick = async ()=>{
           const tier = btn.dataset.tier || "";
-          if (tier) await approve(adminKey, submissionId, tier);
+          if (!submissionId) return alert("submissionId가 비어있어(대기목록 응답 확인 필요)");
+          await approve(adminKey, submissionId, tier);
         };
       });
 
@@ -111,16 +110,14 @@ async function loadPending(){
 }
 
 async function approve(adminKey, submissionId, tier){
-  if(!confirm(`승인할까?\nsubmissionId=${submissionId}\ntier=${tier}`)) return;
-
   try{
     const res = await fetch(API_URL, {
       method:"POST",
       headers:{ "Content-Type":"application/json" },
       body: JSON.stringify({
         action:"approve",
-        adminKey,              // ✅ 최상위로 보내야 Unauthorized 안 뜸
-        data:{ submissionId, tier }
+        adminKey,                 // ✅ 최상위 (Unauthorized 방지)
+        data:{ submissionId, tier } // ✅ submissionId 확실히 전달
       })
     });
     const json = await res.json();
