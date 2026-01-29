@@ -227,11 +227,11 @@ textarea.input{ min-height:76px; resize:none; }
       <div class="status" id="statusText">불러오는 중…</div>
     </div>
 
-    <!-- ✅ 오른쪽: 인증맛집 + 500m (원래처럼 여기!) -->
+    <!-- ✅ 오른쪽: 인증 + 500m -->
     <div class="controls">
       <div id="verifiedBtn" class="toggleBtn" title="인증맛집만">
         <span class="toggleDot"></span>
-        <span>★인증맛집</span>
+        <span>인증</span>
       </div>
       <div id="nearBtn" class="toggleBtn" title="내주변 500m">
         <span class="toggleDot"></span>
@@ -240,7 +240,6 @@ textarea.input{ min-height:76px; resize:none; }
     </div>
   </div>
 
-  <!-- ✅ 카테고리: 등록된 카테고리만 표시 -->
   <div class="chipBar" id="chips"></div>
 </div>
 
@@ -333,14 +332,12 @@ function esc(s){
 }
 function pickMainCategory(categoryStr){
   const cats = parseCats(categoryStr);
-  // 우선순위 기반으로 대표 1개
   for (const p of CATEGORY_PRIORITY) if (cats.includes(p)) return p;
   return cats[0] || "기타";
 }
 
 /* =========================
    인증맛집 판별
-   - 너 시트 컬럼명에 맞춰 여러 케이스 대응
 ========================= */
 function isVerifiedItem(item){
   const v =
@@ -354,6 +351,48 @@ function isVerifiedItem(item){
 }
 
 /* =========================
+   ✅ 인증 별 배지 (스타일 강화 버전)
+   - 골드 그라데이션 + 반짝 하이라이트 + 외곽 글로우
+========================= */
+function verifiedBadgeHtml(){
+  return `
+    <div style="
+      position:absolute; top:-9px; right:-9px;
+      width:22px; height:22px; border-radius:999px;
+      background: radial-gradient(circle at 30% 30%, #fff7c7 0%, #ffd86a 30%, #ffb400 60%, #ff8a00 100%);
+      box-shadow:
+        0 10px 18px rgba(0,0,0,.20),
+        0 0 0 2px rgba(255,255,255,.95),
+        0 0 18px rgba(255,180,0,.55);
+      display:flex; align-items:center; justify-content:center;
+      transform: rotate(-10deg);
+    ">
+      <div style="
+        position:absolute; inset:2px;
+        border-radius:999px;
+        border:1px solid rgba(255,255,255,.55);
+      "></div>
+
+      <div style="
+        position:absolute; left:4px; top:4px;
+        width:7px; height:7px; border-radius:999px;
+        background: rgba(255,255,255,.85);
+        filter: blur(.2px);
+      "></div>
+
+      <span style="
+        font-size:13px;
+        color:#fff;
+        font-weight:900;
+        text-shadow: 0 2px 2px rgba(0,0,0,.25);
+        line-height:1;
+        transform: translateY(-.5px);
+      ">★</span>
+    </div>
+  `;
+}
+
+/* =========================
    마커 아이콘 (별표 포함)
 ========================= */
 const ICON_W = 110, ICON_H = 110;
@@ -363,15 +402,7 @@ function iconAnchor(){ return new naver.maps.Point(Math.floor(ICON_W/2), ICON_H)
 function markerHtml(item, showLabel){
   const main = pickMainCategory(item.category);
   const emoji = emojiOf(main);
-  const star = isVerifiedItem(item) ? `
-    <div style="
-      position:absolute; top:-7px; right:-7px;
-      width:18px; height:18px; border-radius:999px;
-      background:#ffb400; color:#fff; font-size:12px; font-weight:900;
-      display:flex; align-items:center; justify-content:center;
-      box-shadow:0 6px 14px rgba(0,0,0,.18);
-      border:2px solid #fff;
-    ">★</div>` : "";
+  const badge = isVerifiedItem(item) ? verifiedBadgeHtml() : "";
 
   return `
     <div style="transform: translate(-50%, -100%); display:flex; flex-direction:column; align-items:center; gap:6px; pointer-events:auto;">
@@ -380,7 +411,10 @@ function markerHtml(item, showLabel){
         background:#fff; display:flex; align-items:center; justify-content:center;
         font-size:22px; box-shadow:0 8px 20px rgba(0,0,0,.22);
         border:1px solid rgba(0,0,0,.06);
-      ">${emoji}${star}</div>
+      ">
+        ${emoji}
+        ${badge}
+      </div>
 
       ${showLabel ? `
         <div style="
@@ -422,7 +456,6 @@ function buildChipsFromData(data){
   data.forEach(it => parseCats(it.category).forEach(c => set.add(c)));
   const cats = Array.from(set).filter(Boolean);
 
-  // 우선순위 + 가나다
   cats.sort((a,b)=>{
     const ia = CATEGORY_PRIORITY.indexOf(a);
     const ib = CATEGORY_PRIORITY.indexOf(b);
@@ -434,7 +467,6 @@ function buildChipsFromData(data){
 
   chipsEl.innerHTML = "";
 
-  // 전체
   const all = document.createElement("div");
   all.className = "chip on";
   all.dataset.cat = "__ALL__";
@@ -446,7 +478,6 @@ function buildChipsFromData(data){
   };
   chipsEl.appendChild(all);
 
-  // 데이터에 존재하는 카테고리만
   cats.forEach(cat=>{
     const el = document.createElement("div");
     el.className = "chip";
@@ -455,7 +486,6 @@ function buildChipsFromData(data){
     el.onclick = () => {
       if (selectedCats.has(cat)) selectedCats.delete(cat);
       else selectedCats.add(cat);
-
       syncChipState();
       applyFiltersAndRender();
     };
@@ -493,7 +523,6 @@ nearBtnEl.addEventListener("click", ()=>{
   useNear = !useNear;
   nearBtnEl.classList.toggle("on", useNear);
 
-  // ✅ 500m ON일 때만 위치 잡기
   if (useNear) startWatchLocation();
   else stopWatchLocation();
 
@@ -530,14 +559,14 @@ function initMap(){
   }
 
   map = new naver.maps.Map("map", {
-    center: new naver.maps.LatLng(37.661, 126.764), // ✅ 장항지구 고정 시작
+    center: new naver.maps.LatLng(37.661, 126.764),
     zoom: 14
   });
 
   naver.maps.Event.addListener(map, "click", () => closeSheet());
   naver.maps.Event.addListener(map, "zoom_changed", () => updateMarkerIcons());
 
-  loadRestaurants(); // ✅ 위치는 500m ON일 때만
+  loadRestaurants();
 }
 
 /* =========================
@@ -638,10 +667,7 @@ function loadRestaurants(){
       }
 
       allData = json.data || [];
-
-      // ✅ “등록된 카테고리만” 칩 생성
       buildChipsFromData(allData);
-
       applyFiltersAndRender();
     })
     .catch(err=>{
@@ -660,7 +686,7 @@ function clearMarkers(){
 
 function updateMarkerIcons(){
   if (!map) return;
-  const showLabel = map.getZoom() > 14; // ✅ 줌 14 이하 라벨 숨김
+  const showLabel = map.getZoom() > 14;
   markers.forEach(({ marker, item }) => {
     marker.setIcon({
       content: markerHtml(item, showLabel),
@@ -726,7 +752,6 @@ function showSheet(item){
   document.getElementById("sName").textContent = (item.name || "") + (isVerifiedItem(item) ? " ★" : "");
   document.getElementById("sAddr").textContent = item.address || "";
 
-  // ✅ desc 표시 (필드명 여러 케이스 대응)
   const desc = String(item.desc || item.description || "").trim();
   document.getElementById("sDesc").textContent = desc ? desc : "";
 
