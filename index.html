@@ -6,8 +6,6 @@
 <title>장항지구 맛집지도</title>
 
 <link rel="icon" href="data:,">
-
-<!-- ✅ 네이버 지도 SDK -->
 <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=g7937mmgwu"></script>
 
 <style>
@@ -15,11 +13,7 @@ html, body { margin:0; padding:0; height:100%; font-family:-apple-system, BlinkM
 #map { width:100%; height:100%; position:relative; z-index:1; }
 
 /* ✅ 상단 UI */
-.topUI{
-  position:fixed; left:12px; right:12px; top:12px;
-  z-index:9999; display:flex; flex-direction:column; gap:8px;
-  pointer-events:none;
-}
+.topUI{ position:fixed; left:12px; right:12px; top:12px; z-index:9999; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
 .topRow{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
 .brand{ font-weight:900; font-size:15px; color:#111; text-shadow:0 2px 10px rgba(255,255,255,.9); }
 .status{ font-size:11px; color:#222; text-shadow:0 2px 10px rgba(255,255,255,.9); }
@@ -38,13 +32,7 @@ html, body { margin:0; padding:0; height:100%; font-family:-apple-system, BlinkM
 .toggleBtn.on .toggleDot{ background:#03c75a; }
 .toggleBtn.on{ border-color: rgba(3,199,90,.35); }
 
-.chipBar{
-  display:flex; gap:6px;
-  flex-wrap:nowrap; overflow:auto;
-  -webkit-overflow-scrolling: touch;
-  padding-bottom:2px;
-  pointer-events:auto;
-}
+.chipBar{ display:flex; gap:6px; flex-wrap:nowrap; overflow:auto; -webkit-overflow-scrolling: touch; padding-bottom:2px; pointer-events:auto; }
 .chipBar::-webkit-scrollbar{ display:none; }
 .chip{
   flex:0 0 auto;
@@ -88,7 +76,6 @@ html, body { margin:0; padding:0; height:100%; font-family:-apple-system, BlinkM
 }
 .sheet.show{ display:block; }
 
-/* ✅ 닫기 버튼: 스크롤해도 고정 */
 .close-btn{
   position:sticky; top:0;
   display:flex; justify-content:flex-end;
@@ -118,25 +105,38 @@ html, body { margin:0; padding:0; height:100%; font-family:-apple-system, BlinkM
 
 /* 댓글 */
 .cmtBox{ margin-top:14px; }
-.cmtHeader{ font-weight:900; font-size:13px; margin-bottom:8px; }
+.cmtHeader{ font-weight:900; font-size:13px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; gap:10px; }
+.cmtSummary{ font-size:11px; color:#555; white-space:nowrap; }
 .cmtList{ display:flex; flex-direction:column; gap:10px; }
 .cmtItem{ border:1px solid rgba(0,0,0,.07); border-radius:12px; padding:10px; background:#fff; }
-.cmtTop{ display:flex; justify-content:space-between; gap:10px; }
+.cmtTop{ display:flex; justify-content:space-between; gap:10px; align-items:center; }
 .cmtNick{ font-weight:900; font-size:12px; }
 .cmtTime{ font-size:10px; color:#777; white-space:nowrap; }
-.cmtContent{ margin-top:6px; font-size:12px; line-height:1.35; }
+.cmtStars{ font-size:12px; letter-spacing:1px; }
 
 .formRow{ display:flex; gap:8px; margin-top:10px; }
 .input{ flex:1; padding:10px 12px; border-radius:12px; border:1px solid rgba(0,0,0,.12); font-size:12px; }
 textarea.input{ min-height:70px; resize:none; }
 .mini{ font-size:11px; color:#777; margin-top:8px; }
+
+/* ✅ 별점 선택 UI */
+.ratingRow{ display:flex; align-items:center; gap:8px; margin-top:10px; }
+.starBtn{
+  width:34px; height:34px; border-radius:10px;
+  border:1px solid rgba(0,0,0,.12);
+  background:#fff;
+  cursor:pointer;
+  font-size:18px;
+  display:flex; align-items:center; justify-content:center;
+}
+.starBtn.on{ border-color: rgba(3,199,90,.35); }
+.ratingHint{ font-size:11px; color:#666; }
 </style>
 </head>
 
 <body>
 <div id="map"></div>
 
-<!-- ✅ 상단 UI -->
 <div class="topUI">
   <div class="topRow">
     <div>
@@ -156,13 +156,9 @@ textarea.input{ min-height:70px; resize:none; }
   <div class="chipBar" id="chips"></div>
 </div>
 
-<!-- ✅ 현재 위치 버튼 -->
 <button class="locBtn" id="btnMyLoc" type="button" title="현재 위치로">⦿</button>
-
-<!-- ✅ 제보 버튼 -->
 <button class="fab" id="fabReport" type="button">제보</button>
 
-<!-- ✅ 바텀시트 -->
 <div id="sheet" class="sheet">
   <div class="close-btn">
     <button class="close-x" id="btnCloseSheet" type="button">×</button>
@@ -176,9 +172,23 @@ textarea.input{ min-height:70px; resize:none; }
   <button class="btn" id="btnOpenNaver" type="button">네이버지도에서 보기</button>
 
   <div class="cmtBox">
-    <div class="cmtHeader">댓글</div>
+    <div class="cmtHeader">
+      <div>댓글</div>
+      <div class="cmtSummary" id="ratingSummary"></div>
+    </div>
+
     <div class="cmtList" id="cmtList"></div>
     <div class="mini" id="cmtStatus"></div>
+
+    <!-- ✅ 별점 선택 -->
+    <div class="ratingRow" id="ratingRow">
+      <button class="starBtn" data-v="1" type="button">★</button>
+      <button class="starBtn" data-v="2" type="button">★</button>
+      <button class="starBtn" data-v="3" type="button">★</button>
+      <button class="starBtn" data-v="4" type="button">★</button>
+      <button class="starBtn" data-v="5" type="button">★</button>
+      <div class="ratingHint" id="ratingHint">평점 선택</div>
+    </div>
 
     <div class="formRow">
       <input class="input" id="nickInput" placeholder="닉네임" maxlength="20" />
@@ -192,7 +202,7 @@ textarea.input{ min-height:70px; resize:none; }
 
 <script>
 /******** 설정 ********/
-const API_URL = "https://twilight-art-ed3c.wlalsqqq.workers.dev"; // ✅ Worker
+const API_URL = "https://twilight-art-ed3c.wlalsqqq.workers.dev"; // ✅ Worker(여기 유지)
 const REPORT_URL = "./submit.html";
 /************************/
 
@@ -206,30 +216,39 @@ const cmtListEl = document.getElementById("cmtList");
 const cmtStatusEl = document.getElementById("cmtStatus");
 const nickInputEl = document.getElementById("nickInput");
 const contentInputEl = document.getElementById("contentInput");
+const ratingSummaryEl = document.getElementById("ratingSummary");
 
 const nearBtnEl = document.getElementById("nearBtn");
 const vipBtnEl = document.getElementById("vipBtn");
 
-let useNear = false;         // ✅ 디폴트: 장항지구 고정(500m OFF)
-let useVipOnly = false;      // ✅ 디폴트: 전체
+let useNear = false;
+let useVipOnly = false;
 
-const markers = [];          // { marker, item }
+const markers = [];
 let allData = [];
-let userPos = null;          // {lat, lng}
+let userPos = null;
 
 let myMarker = null;
 let myCircle = null;
 let watchId = null;
 
 /* =========================
+   deviceId (IP 대신 현실적인 중복 방지 키)
+========================= */
+function getDeviceId(){
+  const key = "jh_food_device_id";
+  let v = localStorage.getItem(key);
+  if (v) return v;
+  v = "d_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2,10);
+  localStorage.setItem(key, v);
+  return v;
+}
+const DEVICE_ID = getDeviceId();
+
+/* =========================
    이모지(대표 1개)
 ========================= */
-const CATEGORY_PRIORITY = [
-  "카페","디저트","브런치","베이커리",
-  "한식","국밥","고기","해산물","면",
-  "중식","일식","초밥","스시","돈까스","양식","아시아",
-  "분식","치킨","피자","햄버거","샐러드","술집","배달"
-];
+const CATEGORY_PRIORITY = ["카페","디저트","브런치","베이커리","한식","국밥","고기","해산물","면","중식","일식","초밥","스시","돈까스","양식","아시아","분식","치킨","피자","햄버거","샐러드","술집","배달"];
 const CAT_EMOJI = {
   "카페":"☕","디저트":"🍰","브런치":"🥐","베이커리":"🥖",
   "한식":"🍚","국밥":"🥘","고기":"🥩","해산물":"🦞","면":"🍜",
@@ -253,56 +272,33 @@ function esc(s){
     .replaceAll("'","&#039;");
 }
 
-/* ✅ 마커 HTML: 왕관은 오른쪽 위 “배지”로 (이모지 옆 X) */
+/* ✅ 마커 HTML: 왕관은 배지 */
 function markerHtml(item, showLabel){
   const main = pickMainCategory(item.category);
   const emoji = emojiOf(main);
   const isVip = (String(item.tier||"").toLowerCase() === "verified");
 
   return `
-    <div style="
-      position:relative;
-      transform: translate(-50%, -100%);
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap:6px;
-      pointer-events:auto;
-    ">
-      <div style="
-        position:relative;
-        width:38px; height:38px; border-radius:19px;
-        background:#fff;
-        display:flex; align-items:center; justify-content:center;
-        font-size:22px;
-        box-shadow:0 8px 20px rgba(0,0,0,.22);
-        border:1px solid rgba(0,0,0,.06);
-      ">
+    <div style="position:relative; transform: translate(-50%, -100%); display:flex; flex-direction:column; align-items:center; gap:6px; pointer-events:auto;">
+      <div style="position:relative; width:38px; height:38px; border-radius:19px; background:#fff; display:flex; align-items:center; justify-content:center; font-size:22px; box-shadow:0 8px 20px rgba(0,0,0,.22); border:1px solid rgba(0,0,0,.06);">
         ${emoji}
         ${isVip ? `
-     <div style="
-      position:absolute;
-      top:-6px; right:-6px;
-      width:18px; height:18px;
-      border-radius:999px;
-      background:linear-gradient(135deg,#FFD36A,#FFB800);
-      color:#5a3b00;
-      font-size:11px;
-      display:flex; align-items:center; justify-content:center;
-      box-shadow:0 4px 10px rgba(0,0,0,.25);
-      border:1px solid rgba(0,0,0,.15);
-    ">👑</div>
-
-
+          <div style="
+            position:absolute; top:-6px; right:-6px;
+            width:18px; height:18px; border-radius:999px;
+            background:linear-gradient(135deg,#FFD36A,#FFB800);
+            color:#5a3b00; font-size:11px;
+            display:flex; align-items:center; justify-content:center;
+            box-shadow:0 4px 10px rgba(0,0,0,.25);
+            border:1px solid rgba(0,0,0,.15);
+          ">👑</div>
         ` : ""}
       </div>
 
       ${showLabel ? `
-        <div style="
-          max-width:200px; background:#fff; padding:6px 10px; border-radius:999px;
-          font-size:12px; font-weight:900; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-          box-shadow:0 8px 20px rgba(0,0,0,.18); border:1px solid rgba(0,0,0,.06);
-        ">${esc(item.name)}</div>` : ""}
+        <div style="max-width:200px; background:#fff; padding:6px 10px; border-radius:999px; font-size:12px; font-weight:900; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; box-shadow:0 8px 20px rgba(0,0,0,.18); border:1px solid rgba(0,0,0,.06);">
+          ${esc(item.name)}
+        </div>` : ""}
     </div>`;
 }
 
@@ -331,7 +327,6 @@ function within500m(item){
    카테고리 칩(등록된 카테고리만)
 ========================= */
 const selectedCats = new Set();
-
 function setAllSelected(){
   selectedCats.clear();
   renderChipsState();
@@ -368,7 +363,6 @@ function buildChipsFromData(data){
     el.onclick = () => {
       if (selectedCats.has(cat)) selectedCats.delete(cat);
       else selectedCats.add(cat);
-
       if (selectedCats.size === 0) setAllSelected();
       else { renderChipsState(); applyFiltersAndRender(); }
     };
@@ -410,7 +404,6 @@ function ensureWatchLocation(){
       applyFiltersAndRender();
     },
     (err)=>{
-      console.warn("위치 오류:", err);
       if (err.code === 1) statusTextEl.textContent = "500m: 위치 권한 필요(허용)";
       else if (err.code === 3) statusTextEl.textContent = "500m: 위치가 늦게 잡혀요";
       else statusTextEl.textContent = "500m: 위치 사용 불가";
@@ -423,7 +416,6 @@ function stopWatchLocation(){
   navigator.geolocation.clearWatch(watchId);
   watchId = null;
 }
-
 function updateMyLocationOverlay(){
   if (!map || !userPos) return;
   const latlng = new naver.maps.LatLng(userPos.lat, userPos.lng);
@@ -433,8 +425,7 @@ function updateMyLocationOverlay(){
       position: latlng,
       map,
       icon: {
-        content: `<div style="transform:translate(-50%,-50%); width:14px; height:14px; border-radius:999px;
-          background:#03c75a; box-shadow:0 6px 16px rgba(0,0,0,.25); border:2px solid #fff;"></div>`,
+        content: `<div style="transform:translate(-50%,-50%); width:14px; height:14px; border-radius:999px; background:#03c75a; box-shadow:0 6px 16px rgba(0,0,0,.25); border:2px solid #fff;"></div>`,
         size: new naver.maps.Size(20,20),
         anchor: new naver.maps.Point(10,10)
       }
@@ -460,6 +451,29 @@ function updateMyLocationOverlay(){
 }
 
 /* =========================
+   평점 UI (1~5)
+========================= */
+let selectedRating = 0;
+const starBtns = Array.from(document.querySelectorAll(".starBtn"));
+const ratingHintEl = document.getElementById("ratingHint");
+
+function paintStars(v){
+  starBtns.forEach(btn=>{
+    const n = Number(btn.dataset.v);
+    btn.classList.toggle("on", n <= v);
+    btn.textContent = (n <= v) ? "★" : "☆";
+  });
+  ratingHintEl.textContent = v ? `선택: ${v}점` : "평점 선택";
+}
+
+starBtns.forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    selectedRating = Number(btn.dataset.v);
+    paintStars(selectedRating);
+  });
+});
+
+/* =========================
    UI 이벤트
 ========================= */
 nearBtnEl.addEventListener("click", ()=>{
@@ -473,7 +487,6 @@ nearBtnEl.addEventListener("click", ()=>{
     if (myCircle) myCircle.setMap(null), myCircle=null;
     if (myMarker) myMarker.setMap(null), myMarker=null;
   }
-
   applyFiltersAndRender();
 });
 
@@ -487,10 +500,7 @@ document.getElementById("fabReport").addEventListener("click", ()=>{ location.hr
 
 document.getElementById("btnMyLoc").addEventListener("click", ()=>{
   if (!map) return;
-
-  if (!navigator.geolocation){
-    alert("이 기기에서 위치 사용 불가"); return;
-  }
+  if (!navigator.geolocation){ alert("이 기기에서 위치 사용 불가"); return; }
   navigator.geolocation.getCurrentPosition(
     (pos)=>{
       userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
@@ -509,10 +519,10 @@ document.getElementById("btnAddComment").addEventListener("click", addCommentFro
 /* =========================
    지도 초기화
 ========================= */
-let lastShowLabel = null; // ✅ 줌 상태 변할 때만 아이콘 갱신(흔들림 감소)
+let lastShowLabel = null;
 
 function initMap(){
-  if (!naver?.maps) { console.error("네이버 지도 SDK 로드 실패"); setTimeout(initMap, 100); return; }
+  if (!naver?.maps) { setTimeout(initMap, 100); return; }
 
   map = new naver.maps.Map("map", {
     center: new naver.maps.LatLng(37.661, 126.764),
@@ -520,10 +530,9 @@ function initMap(){
   });
 
   naver.maps.Event.addListener(map, "click", () => closeSheet());
-
   naver.maps.Event.addListener(map, "zoom_changed", () => {
     const showLabel = map.getZoom() > 14;
-    if (showLabel === lastShowLabel) return;   // ✅ 상태 바뀔 때만
+    if (showLabel === lastShowLabel) return;
     lastShowLabel = showLabel;
     updateMarkerIcons();
   });
@@ -538,12 +547,12 @@ function loadRestaurants(){
   fetch(API_URL + "?action=list")
     .then(r=>r.json())
     .then(json=>{
-      if (!json.ok){ statusTextEl.textContent="데이터 로드 실패"; console.error(json); return; }
+      if (!json.ok){ statusTextEl.textContent="데이터 로드 실패"; return; }
       allData = json.data || [];
       buildChipsFromData(allData);
       applyFiltersAndRender();
     })
-    .catch(err=>{ console.error(err); statusTextEl.textContent="데이터 요청 오류"; });
+    .catch(()=>{ statusTextEl.textContent="데이터 요청 오류"; });
 }
 
 /* =========================
@@ -553,16 +562,11 @@ function clearMarkers(){
   markers.forEach(m => m.marker.setMap(null));
   markers.length = 0;
 }
-
 function updateMarkerIcons(){
   if (!map) return;
   const showLabel = map.getZoom() > 14;
-  markers.forEach(({ marker, item }) => {
-    // ✅ size/anchor 제거 (흔들림 방지 핵심)
-    marker.setIcon({ content: markerHtml(item, showLabel) });
-  });
+  markers.forEach(({ marker, item }) => marker.setIcon({ content: markerHtml(item, showLabel) }));
 }
-
 function renderMarkers(data){
   clearMarkers();
   const showLabel = map.getZoom() > 14;
@@ -571,7 +575,6 @@ function renderMarkers(data){
     const marker = new naver.maps.Marker({
       position: new naver.maps.LatLng(item.lat, item.lng),
       map,
-      // ✅ size/anchor 제거 (흔들림 방지 핵심)
       icon:{ content: markerHtml(item, showLabel) }
     });
 
@@ -616,13 +619,8 @@ function showSheet(item){
 
   const d = String(item.desc || "").trim();
   const descEl = document.getElementById("sDesc");
-  if (d){
-    descEl.style.display = "block";
-    descEl.textContent = d;
-  } else {
-    descEl.style.display = "none";
-    descEl.textContent = "";
-  }
+  if (d){ descEl.style.display = "block"; descEl.textContent = d; }
+  else { descEl.style.display = "none"; descEl.textContent = ""; }
 
   const cats = parseCats(item.category);
   const tags = parseCats(item.tags);
@@ -633,33 +631,59 @@ function showSheet(item){
   if (tags.length) pills.push(...tags.map(t => `<span class="pill">#${esc(t)}</span>`));
 
   document.getElementById("sMeta").innerHTML = pills.join("");
+  ratingSummaryEl.textContent = "";
+  selectedRating = 0;         // ✅ 매장 열 때 초기화
+  paintStars(0);
+
   document.getElementById("sheet").classList.add("show");
 }
 function closeSheet(){ document.getElementById("sheet").classList.remove("show"); }
 
-/* 댓글 */
+/* 댓글 렌더 + 평균 */
+function starsText(r){
+  const n = Math.max(1, Math.min(5, Number(r)||0));
+  return "★".repeat(n) + "☆".repeat(5-n);
+}
+
 function renderComments(list){
   cmtListEl.innerHTML = "";
+
+  // 평균 계산
+  const ratings = (list||[]).map(x => Number(x.rating)).filter(v => Number.isFinite(v) && v>=1 && v<=5);
+  if (ratings.length){
+    const avg = (ratings.reduce((a,b)=>a+b,0) / ratings.length);
+    ratingSummaryEl.textContent = `평균 ${avg.toFixed(1)}점 · ${ratings.length}명`;
+  } else {
+    ratingSummaryEl.textContent = "";
+  }
+
   if (!list || list.length === 0){
     cmtListEl.innerHTML = `<div class="mini">첫 댓글을 남겨보세요 🙂</div>`;
     return;
   }
+
   list.forEach(c=>{
     const nick = esc(c.nickname || "익명");
     const time = esc(c.createdAt || "");
     const content = esc(c.content || "");
+    const rating = Number(c.rating);
+
     const el = document.createElement("div");
     el.className = "cmtItem";
     el.innerHTML = `
       <div class="cmtTop">
-        <div class="cmtNick">${nick}</div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <div class="cmtNick">${nick}</div>
+          <div class="cmtStars">${starsText(rating)}</div>
+        </div>
         <div class="cmtTime">${time}</div>
       </div>
-      <div class="cmtContent">${content}</div>
+      <div class="cmtContent" style="margin-top:6px; font-size:12px; line-height:1.35;">${content}</div>
     `;
     cmtListEl.appendChild(el);
   });
 }
+
 async function loadComments(restaurantId){
   if (!restaurantId) return;
   cmtStatusEl.textContent = "댓글 불러오는 중…";
@@ -670,16 +694,17 @@ async function loadComments(restaurantId){
     renderComments(json.data || []);
     cmtStatusEl.textContent = "";
   }catch(e){
-    console.error(e);
     cmtStatusEl.textContent = "댓글을 불러오지 못했어요.";
   }
 }
+
 async function addCommentFromUI(){
   if (!selected?.id) return;
 
   const nickname = nickInputEl.value.trim();
   const content = contentInputEl.value.trim();
 
+  if (!selectedRating) { alert("평점을 선택해줘(1~5)"); return; }
   if (!nickname) { alert("닉네임을 입력해줘"); return; }
   if (!content) { alert("댓글 내용을 입력해줘"); return; }
 
@@ -690,17 +715,24 @@ async function addCommentFromUI(){
       headers:{ "Content-Type":"application/json" },
       body: JSON.stringify({
         action: "addcomment",
-        data: { restaurantId: String(selected.id), nickname, content }
+        data: {
+          restaurantId: String(selected.id),
+          nickname,
+          content,
+          rating: selectedRating,
+          deviceId: DEVICE_ID
+        }
       })
     });
     const json = await res.json();
     if (!json.ok) throw new Error(json.error || "댓글 등록 실패");
 
     contentInputEl.value = "";
+    selectedRating = 0;
+    paintStars(0);
     await loadComments(selected.id);
     cmtStatusEl.textContent = "";
   }catch(e){
-    console.error(e);
     cmtStatusEl.textContent = "댓글 등록 실패";
     alert("댓글 등록 실패: " + (e.message || ""));
   }
@@ -719,25 +751,7 @@ function openNaverMap(){
   }
 
   const name = encodeURIComponent(selected.name || "");
-  const lat = selected.lat;
-  const lng = selected.lng;
-  const appname = encodeURIComponent("장항지구맛집");
-
-  const ua = navigator.userAgent.toLowerCase();
-  if (ua.includes("android")) {
-    const url = "intent://place?lat=" + lat + "&lng=" + lng + "&name=" + name + "&appname=" + appname +
-      "#Intent;scheme=nmap;package=com.nhn.android.nmap;end";
-    window.open(url, "_blank");
-  } else if (/iphone|ipad/.test(ua)) {
-    const link = document.createElement("a");
-    link.href = "nmap://place?lat=" + lat + "&lng=" + lng + "&name=" + name + "&appname=" + appname;
-    link.target = "_blank";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  } else {
-    window.open("https://map.naver.com/v5/search/" + name, "_blank");
-  }
+  window.open("https://map.naver.com/v5/search/" + name, "_blank");
 }
 
 /* =========================
