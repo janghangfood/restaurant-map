@@ -641,8 +641,9 @@ function closeSheet(){ document.getElementById("sheet").classList.remove("show")
 
 /* 댓글 렌더 + 평균 */
 function starsText(r){
-  const n = Math.max(1, Math.min(5, Number(r)||0));
-  return "★".repeat(n) + "☆".repeat(5-n);
+  const n = Math.max(0, Math.min(5, Math.round(Number(r) || 0)));
+  // 빈별을 ✩ 로 바꿔서 “무조건 5개 꽉찬 것처럼 보이는” 문제 방지
+  return "★".repeat(n) + "✩".repeat(5-n) + ` (${n}점)`;
 }
 
 function renderComments(list){
