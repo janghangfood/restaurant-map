@@ -570,7 +570,7 @@ function initMap(){
   naver.maps.Event.addListener(map, "click", () => closeSheet());
   naver.maps.Event.addListener(map, "zoom_changed", () => updateMarkerIcons());
 
-  statusTextEl.textContent = "장항지구 기준";
+  statusTextEl.textContent = "조회개수";
   loadRestaurants();
 }
 
