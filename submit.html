@@ -1,142 +1,141 @@
 <!doctype html>
 <html lang="ko">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>장항지구 맛집 제보</title>
-  <link rel="icon" href="data:,">
-  <style>
-    body{font-family:-apple-system,BlinkMacSystemFont,"Noto Sans KR",sans-serif;margin:0;background:#f6f7f9;}
-    .wrap{max-width:520px;margin:0 auto;padding:18px;}
-    .card{background:#fff;border:1px solid #eee;border-radius:16px;padding:16px;box-shadow:0 6px 20px rgba(0,0,0,.06);}
-    h1{font-size:18px;margin:0 0 6px;}
-    .sub{font-size:13px;color:#666;margin:0 0 14px;line-height:1.4;}
-    label{display:block;font-size:13px;color:#333;margin:12px 0 6px;font-weight:900;}
-    input, textarea{width:100%;box-sizing:border-box;padding:12px;border:1px solid #ddd;border-radius:12px;font-size:14px;background:#fff;}
-    textarea{min-height:84px;resize:vertical;}
-    .chips{display:flex;flex-wrap:wrap;gap:8px;}
-    .chip{padding:9px 10px;border-radius:999px;border:1px solid #ddd;background:#fff;font-size:13px;user-select:none;}
-    .chip.active{border-color:#03c75a;background:#03c75a1a;font-weight:900;}
-    .row{display:flex;gap:10px;}
-    .row > *{flex:1;}
-    .btn{margin-top:14px;width:100%;padding:14px;border:0;border-radius:14px;background:#03c75a;color:#fff;font-weight:900;font-size:15px;}
-    .btn.secondary{background:#f3f4f6;color:#111;}
-    .toast{margin-top:12px;padding:12px;border-radius:12px;background:#111;color:#fff;font-size:13px;display:none;}
-    .toast.show{display:block;}
-    .small{margin-top:10px;color:#777;font-size:12px;line-height:1.35;}
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>장항지구 맛집 제보</title>
+<link rel="icon" href="data:,">
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,"Noto Sans KR",sans-serif;margin:0;background:#f6f7f9;}
+.wrap{max-width:520px;margin:0 auto;padding:18px;}
+.card{background:#fff;border:1px solid #eee;border-radius:16px;padding:16px;box-shadow:0 6px 20px rgba(0,0,0,.06);}
+h1{font-size:18px;margin:0 0 6px;}
+.sub{font-size:13px;color:#666;margin:0 0 14px;line-height:1.4;}
+label{display:block;font-size:13px;color:#333;margin:12px 0 6px;font-weight:900;}
+input, textarea{width:100%;box-sizing:border-box;padding:12px;border:1px solid #ddd;border-radius:12px;font-size:14px;background:#fff;}
+textarea{min-height:84px;resize:vertical;}
+.chips{display:flex;flex-wrap:wrap;gap:8px;}
+.chip{padding:9px 10px;border-radius:999px;border:1px solid #ddd;background:#fff;font-size:13px;user-select:none;font-weight:900;}
+.chip.active{border-color:#03c75a;background:#03c75a1a;}
+.row{display:flex;gap:10px;}
+.row > *{flex:1;}
+.btn{margin-top:14px;width:100%;padding:14px;border:0;border-radius:14px;background:#03c75a;color:#fff;font-weight:900;font-size:15px;cursor:pointer;}
+.btn.secondary{background:#111;}
+.toast{margin-top:12px;padding:12px;border-radius:12px;background:#111;color:#fff;font-size:13px;display:none;}
+.toast.show{display:block;}
+.small{margin-top:10px;color:#777;font-size:12px;line-height:1.35;}
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card">
-      <h1>장항지구 맛집 제보</h1>
-      <p class="sub">제보된 맛집은 관리자 확인 후 승인되면 지도에 표시돼요 🙂</p>
+<div class="wrap">
+  <div class="card">
+    <h1>장항지구 맛집 제보</h1>
+    <p class="sub">제보된 맛집은 관리자 확인 후 승인되면 지도에 표시돼요 🙂<br/>가능하면 <b>네이버 플레이스 링크</b>를 넣어주면 좋아요.</p>
 
-      <label>가게명 *</label>
-      <input id="name" placeholder="예) 장항짬뽕" maxlength="40" />
+    <label>가게명 *</label>
+    <input id="name" placeholder="예) 대박각" maxlength="40" />
 
-      <label>주소 *</label>
-      <input id="address" placeholder="예) 고양시 일산동구 ..." maxlength="80" />
+    <label>주소 *</label>
+    <input id="address" placeholder="예) 고양시 일산동구 ..." maxlength="120" />
 
-      <label>카테고리 (복수 선택) *</label>
-      <div id="cats" class="chips"></div>
+    <label>카테고리 (복수 선택) *</label>
+    <div id="cats" class="chips"></div>
 
-      <label>한줄 소개 (선택)</label>
-      <textarea id="desc" placeholder="예) 양 많고 가성비 좋아요" maxlength="120"></textarea>
+    <label>한줄 소개 (선택)</label>
+    <textarea id="desc" placeholder="예) 양 많고 가성비 좋아요" maxlength="200"></textarea>
 
-      <label>네이버 플레이스 링크 (선택)</label>
-      <input id="placeUrl" placeholder="예) https://place.map.naver.com/..." maxlength="200" />
+    <label>네이버 플레이스 링크 (선택)</label>
+    <input id="placeUrl" placeholder="예) https://place.map.naver.com/..." maxlength="200" />
 
-      <div class="row">
-        <div>
-          <label>닉네임 (선택)</label>
-          <input id="nickname" placeholder="예) 장항맘" maxlength="20" />
-        </div>
-        <div>
-          <label>추천 태그(선택)</label>
-          <input id="tags" placeholder="예) 아이동반,주차" maxlength="60" />
-        </div>
+    <div class="row">
+      <div>
+        <label>닉네임 (선택)</label>
+        <input id="nickname" placeholder="예) 장항맘" maxlength="20" />
       </div>
-
-      <button class="btn" onclick="submitRestaurant()">제보하기</button>
-      <button class="btn secondary" onclick="goBack()">지도로 돌아가기</button>
-
-      <div id="toast" class="toast"></div>
-      <div class="small">
-        * 좌표(lat/lng)는 관리자 승인 후 restaurants 시트에서 직접 입력해요.
+      <div>
+        <label>추천 태그(선택)</label>
+        <input id="tags" placeholder="예) 아이동반,주차" maxlength="80" />
       </div>
     </div>
+
+    <button class="btn" onclick="submitRestaurant()">제보하기</button>
+    <button class="btn secondary" onclick="goBack()">지도로 돌아가기</button>
+
+    <div id="toast" class="toast"></div>
+    <div class="small">
+      * 좌표(lat/lng)는 승인 후 관리자가 restaurants 시트에 입력하면 지도에 표시돼요.
+    </div>
   </div>
+</div>
 
 <script>
-  const API_URL = "https://twilight-art-ed3c.wlalsqqq.workers.dev";
+const API_URL = "https://twilight-art-ed3c.wlalsqqq.workers.dev";
 
-  const CATEGORY_MASTER = ["한식","중식","일식","양식","카페","분식","고기","배달","치킨","피자","디저트"];
-  const selected = new Set();
+const CATEGORY_MASTER = ["한식","중식","일식","양식","카페","분식","고기","배달","치킨","피자","디저트"];
+const selected = new Set();
 
-  const catsEl = document.getElementById("cats");
-  CATEGORY_MASTER.forEach(c=>{
-    const el = document.createElement("div");
-    el.className = "chip";
-    el.textContent = c;
-    el.onclick = () => {
-      if (selected.has(c)) selected.delete(c);
-      else selected.add(c);
-      el.classList.toggle("active", selected.has(c));
-    };
-    catsEl.appendChild(el);
-  });
+const catsEl = document.getElementById("cats");
+CATEGORY_MASTER.forEach(c=>{
+  const el = document.createElement("div");
+  el.className = "chip";
+  el.textContent = c;
+  el.onclick = () => {
+    if (selected.has(c)) selected.delete(c);
+    else selected.add(c);
+    el.classList.toggle("active", selected.has(c));
+  };
+  catsEl.appendChild(el);
+});
 
-  function toast(msg){
-    const t = document.getElementById("toast");
-    t.textContent = msg;
-    t.classList.add("show");
-    setTimeout(()=>t.classList.remove("show"), 2500);
+function toast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"), 2500);
+}
+
+async function submitRestaurant(){
+  const name = document.getElementById("name").value.trim();
+  const address = document.getElementById("address").value.trim();
+  const category = [...selected].join(",");
+
+  const desc = document.getElementById("desc").value.trim();
+  const placeUrl = document.getElementById("placeUrl").value.trim();
+  const nickname = document.getElementById("nickname").value.trim();
+  const tags = document.getElementById("tags").value.trim();
+
+  if(!name || !address) return toast("가게명/주소는 꼭 입력해줘!");
+  if(selected.size === 0) return toast("카테고리를 최소 1개 선택해줘!");
+
+  try{
+    const res = await fetch(API_URL, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({
+        action:"submit",
+        data:{ name, address, category, tags, placeUrl, desc, nickname }
+      })
+    });
+    const json = await res.json();
+    if(!json.ok) return toast("제보 실패: " + (json.error || "unknown"));
+
+    toast("제보 완료! 승인되면 지도에 표시돼요 🙂");
+
+    document.getElementById("name").value = "";
+    document.getElementById("address").value = "";
+    document.getElementById("desc").value = "";
+    document.getElementById("placeUrl").value = "";
+    document.getElementById("nickname").value = "";
+    document.getElementById("tags").value = "";
+    selected.clear();
+    document.querySelectorAll(".chip").forEach(ch => ch.classList.remove("active"));
+  }catch(e){
+    console.error(e);
+    toast("네트워크 오류(콘솔 확인)");
   }
+}
 
-  async function submitRestaurant(){
-    const name = document.getElementById("name").value.trim();
-    const address = document.getElementById("address").value.trim();
-    const category = [...selected].join(",");
-
-    const desc = document.getElementById("desc").value.trim();
-    const placeUrl = document.getElementById("placeUrl").value.trim();
-    const nickname = document.getElementById("nickname").value.trim();
-    const tags = document.getElementById("tags").value.trim();
-
-    if(!name || !address) return toast("가게명/주소는 꼭 입력해줘!");
-    if(selected.size === 0) return toast("카테고리를 최소 1개 선택해줘!");
-
-    try{
-      const res = await fetch(API_URL, {
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({
-          action:"submitRestaurant",
-          data:{ name, address, category, tags, placeUrl, desc, nickname }
-        })
-      });
-
-      const json = await res.json();
-      if(!json.ok) return toast("제보 실패: " + (json.error || "unknown"));
-
-      toast("제보 완료! 승인되면 지도에 표시돼요 🙂");
-
-      document.getElementById("name").value = "";
-      document.getElementById("address").value = "";
-      document.getElementById("desc").value = "";
-      document.getElementById("placeUrl").value = "";
-      document.getElementById("nickname").value = "";
-      document.getElementById("tags").value = "";
-      selected.clear();
-      document.querySelectorAll(".chip").forEach(ch => ch.classList.remove("active"));
-    }catch(e){
-      console.error(e);
-      toast("네트워크 오류(콘솔 확인)");
-    }
-  }
-
-  function goBack(){ location.href = "./"; }
+function goBack(){ location.href = "./"; }
 </script>
 </body>
 </html>
