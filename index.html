@@ -570,7 +570,7 @@ function initMap(){
   naver.maps.Event.addListener(map, "click", () => closeSheet());
   naver.maps.Event.addListener(map, "zoom_changed", () => updateMarkerIcons());
 
-  statusTextEl.textContent = "조회개수";
+  statusTextEl.textContent = "조회수";
   loadRestaurants();
 }
 
@@ -593,7 +593,7 @@ function startWatchLocation(force=false){
       userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
       if (useNear) updateMyLocationOverlay();
       applyFiltersAndRender();
-      statusTextEl.textContent = useNear ? "내주변 500m 기준" : "장항지구 기준";
+      statusTextEl.textContent = useNear ? "내주변 500m 기준" : "조회수";
     },
     (err)=>{
       console.warn("초기 위치 실패:", err);
@@ -739,7 +739,7 @@ function applyFiltersAndRender(){
 
   if (useNear && !userPos) statusTextEl.textContent = "내주변 500m: 위치 권한 필요";
   else {
-    const base = useNear ? "내주변 500m" : "장항지구 기준";
+    const base = useNear ? "내주변 500m" : "조회수";
     const v = onlyVerified ? " · 👑인증" : "";
     statusTextEl.textContent = `${base}${v} · ${filtered.length}개`;
   }
