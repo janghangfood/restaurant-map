@@ -14,14 +14,14 @@
 html, body { margin:0; padding:0; height:100%; font-family:-apple-system, BlinkMacSystemFont, 'Noto Sans KR'; }
 #map { width:100%; height:100%; position:relative; z-index:1; }
 
-/* ✅ 상단 UI */
+/* ✅ 상단 UI (배경 큰 박스 없이 칩/텍스트만) */
 .topUI{
   position:fixed;
   left:12px; right:12px; top:12px;
   z-index:9999;
   display:flex;
   flex-direction:column;
-  gap:8px;
+  gap:10px;
   pointer-events:none;
 }
 .topRow{
@@ -32,12 +32,12 @@ html, body { margin:0; padding:0; height:100%; font-family:-apple-system, BlinkM
 }
 .brand{
   font-weight:900;
-  font-size:14px;
+  font-size:16px;
   color:#111;
   text-shadow: 0 2px 10px rgba(255,255,255,.9);
 }
 .status{
-  font-size:11px;
+  font-size:12px;
   color:#222;
   text-shadow: 0 2px 10px rgba(255,255,255,.9);
 }
@@ -51,27 +51,26 @@ html, body { margin:0; padding:0; height:100%; font-family:-apple-system, BlinkM
   display:flex;
   align-items:center;
   gap:6px;
-  padding:6px 9px;
+  padding:8px 10px;
   border-radius:999px;
   border:1px solid rgba(0,0,0,.08);
   background: rgba(255,255,255,.78);
-  box-shadow:0 8px 20px rgba(0,0,0,.10);
+  box-shadow:0 8px 20px rgba(0,0,0,.12);
   font-weight:900;
-  font-size:11px;
+  font-size:12px;
   cursor:pointer;
   user-select:none;
 }
 .toggleDot{
-  width:9px; height:9px; border-radius:999px;
+  width:10px; height:10px; border-radius:999px;
   background:#bbb;
 }
 .toggleBtn.on .toggleDot{ background:#03c75a; }
 .toggleBtn.on{ border-color: rgba(3,199,90,.35); }
 
-/* 카테고리칩 */
 .chipBar{
   display:flex;
-  gap:6px;
+  gap:8px;
   flex-wrap:nowrap;
   overflow:auto;
   -webkit-overflow-scrolling: touch;
@@ -79,15 +78,16 @@ html, body { margin:0; padding:0; height:100%; font-family:-apple-system, BlinkM
   pointer-events:auto;
 }
 .chipBar::-webkit-scrollbar{ display:none; }
+
 .chip{
   flex:0 0 auto;
-  padding:6px 9px;
+  padding:8px 10px;
   border-radius:999px;
   border:1px solid rgba(0,0,0,.08);
   background: rgba(255,255,255,.78);
-  box-shadow:0 8px 20px rgba(0,0,0,.10);
+  box-shadow:0 8px 20px rgba(0,0,0,.12);
   font-weight:900;
-  font-size:11px;
+  font-size:12px;
   cursor:pointer;
   user-select:none;
   white-space:nowrap;
@@ -104,7 +104,7 @@ html, body { margin:0; padding:0; height:100%; font-family:-apple-system, BlinkM
   right:16px;
   bottom:18px;
   z-index:9999;
-  width:52px; height:52px;
+  width:56px; height:56px;
   border-radius:999px;
   background:#03c75a;
   color:#fff;
@@ -112,9 +112,9 @@ html, body { margin:0; padding:0; height:100%; font-family:-apple-system, BlinkM
   align-items:center;
   justify-content:center;
   font-weight:900;
-  font-size:13px;
+  font-size:14px;
   border:0;
-  box-shadow:0 12px 26px rgba(0,0,0,.20);
+  box-shadow:0 12px 26px rgba(0,0,0,.22);
   cursor:pointer;
 }
 .fab:active{ transform: translateY(1px); }
@@ -122,13 +122,13 @@ html, body { margin:0; padding:0; height:100%; font-family:-apple-system, BlinkM
 .locBtn{
   position:fixed;
   right:16px;
-  bottom:80px;
+  bottom:86px;
   z-index:9999;
-  width:40px; height:40px;
+  width:44px; height:44px;
   border-radius:999px;
   background: rgba(255,255,255,.92);
   border:1px solid rgba(0,0,0,.10);
-  box-shadow:0 10px 22px rgba(0,0,0,.16);
+  box-shadow:0 10px 22px rgba(0,0,0,.18);
   cursor:pointer;
   font-weight:900;
   font-size:18px;
@@ -153,11 +153,11 @@ html, body { margin:0; padding:0; height:100%; font-family:-apple-system, BlinkM
 }
 .sheet.show{ display:block; }
 
-/* ✅ 닫기 버튼(스크롤해도 고정) */
+/* ✅ 닫기 버튼: 스크롤해도 상단 고정 */
 .close-btn{
   position: sticky;
-  top: 0;
-  margin-left:auto;
+  top: 10px;
+  margin-left: auto;
   width:28px; height:28px;
   border-radius:999px;
   border:1px solid rgba(0,0,0,.08);
@@ -165,14 +165,24 @@ html, body { margin:0; padding:0; height:100%; font-family:-apple-system, BlinkM
   cursor:pointer;
   font-size:18px; color:#777;
   display:flex; align-items:center; justify-content:center;
-  z-index: 3;
+  z-index: 10;
 }
 
 .sheetTitle{ font-weight:900; font-size:16px; padding-right:40px; }
 .addr{ font-size:13px; color:#555; margin-top:4px; }
-.desc{ font-size:13px; color:#222; margin-top:10px; line-height:1.35; white-space:pre-line; }
 .meta{ margin-top:10px; display:flex; gap:6px; flex-wrap:wrap; }
 .pill{ font-size:12px; padding:4px 8px; border-radius:999px; background:#f2f2f2; }
+
+.descBox{
+  margin-top:10px;
+  font-size:13px;
+  line-height:1.45;
+  color:#222;
+  background:#f6f7f9;
+  border:1px solid rgba(0,0,0,.06);
+  border-radius:12px;
+  padding:10px 12px;
+}
 
 .btn{
   margin-top:12px;
@@ -213,6 +223,19 @@ html, body { margin:0; padding:0; height:100%; font-family:-apple-system, BlinkM
 }
 textarea.input{ min-height:76px; resize:none; }
 .mini{ font-size:12px; color:#777; margin-top:8px; }
+
+/* ✅ 인증 토글 왕관 아이콘(원하면 토글에도 붙일 때 사용) */
+.crownIcon{
+  font-size:13px;
+  line-height:1;
+  margin-right:2px;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,.25));
+}
+.toggleBtn.on .crownIcon{
+  filter:
+    drop-shadow(0 0 4px rgba(255,200,80,.8))
+    drop-shadow(0 1px 2px rgba(0,0,0,.35));
+}
 </style>
 </head>
 
@@ -226,17 +249,22 @@ textarea.input{ min-height:76px; resize:none; }
       <div class="brand">장항지구 맛집지도</div>
       <div class="status" id="statusText">불러오는 중…</div>
     </div>
-
-    <!-- ✅ 오른쪽: 인증 + 500m -->
     <div class="controls">
-      <div id="verifiedBtn" class="toggleBtn" title="인증맛집만">
-        <span class="toggleDot"></span>
-        <span>인증</span>
-      </div>
+      <!-- ✅ 디폴트: OFF 로 시작 (장항지구 고정) -->
       <div id="nearBtn" class="toggleBtn" title="내주변 500m">
         <span class="toggleDot"></span>
-        <span>500m</span>
+        <span>내주변 500m</span>
       </div>
+
+      <!-- ✅ 인증 토글(원래 네 코드에 이미 있었다면 그대로 유지/연결)
+           없으면 이 버튼도 같이 쓰면 됨. -->
+      <!--
+      <div id="verifiedBtn" class="toggleBtn" title="인증맛집만">
+        <span class="toggleDot"></span>
+        <span class="crownIcon">👑</span>
+        <span>인증</span>
+      </div>
+      -->
     </div>
   </div>
 
@@ -252,10 +280,13 @@ textarea.input{ min-height:76px; resize:none; }
 <!-- ✅ 바텀시트 -->
 <div id="sheet" class="sheet">
   <button class="close-btn" id="btnCloseSheet" type="button">×</button>
+
   <div class="sheetTitle" id="sName"></div>
   <div class="addr" id="sAddr"></div>
-  <div class="desc" id="sDesc"></div>
   <div class="meta" id="sMeta"></div>
+
+  <!-- ✅ 소개(desc) 표시 -->
+  <div class="descBox" id="sDesc" style="display:none;"></div>
 
   <button class="btn" id="btnOpenNaver" type="button">네이버지도에서 보기</button>
 
@@ -276,8 +307,8 @@ textarea.input{ min-height:76px; resize:none; }
 
 <script>
 /******** 설정 ********/
-const API_URL = "https://twilight-art-ed3c.wlalsqqq.workers.dev";
-const REPORT_URL = "./submit.html";
+const API_URL = "https://twilight-art-ed3c.wlalsqqq.workers.dev"; // ✅ 너 Worker 주소
+const REPORT_URL = "./submit.html"; // ✅ repo에 submit.html
 /************************/
 
 let map = null;
@@ -291,35 +322,50 @@ const cmtStatusEl = document.getElementById("cmtStatus");
 const nickInputEl = document.getElementById("nickInput");
 const contentInputEl = document.getElementById("contentInput");
 
-/* ✅ 토글 상태 */
 const nearBtnEl = document.getElementById("nearBtn");
-const verifiedBtnEl = document.getElementById("verifiedBtn");
-let useNear = false;       // ✅ 기본 OFF
-let verifiedOnly = false;  // ✅ 기본 OFF
 
-/* 데이터/마커 */
+/* ✅ 디폴트는 장항지구 고정이니까 OFF */
+let useNear = false;
+nearBtnEl.classList.toggle("on", useNear);
+
 const markers = []; // { marker, item }
 let allData = [];
-let userPos = null;
+let userPos = null; // {lat, lng}
 
 let myMarker = null;
 let myCircle = null;
-let watchId = null;
+let watchId = null; // ✅ 500m ON일 때만 watchPosition 시작/중지
 
 /* =========================
-   카테고리/이모지
+   인증 판별 함수(네 기존 로직이 있다면 그걸 그대로 써도 됨)
+   - 아래는 기본 예시: item.level === "verified" 또는 item.verified === true
+========================= */
+function isVerifiedItem(item){
+  return String(item.level || "").toLowerCase() === "verified" || item.verified === true;
+}
+
+/* =========================
+   카테고리 → 대표 이모지 1개
 ========================= */
 const CATEGORY_PRIORITY = [
-  "한식","고기","중식","양식","일식","카페","분식","치킨","피자","디저트","배달"
+  "카페","디저트","브런치","베이커리",
+  "한식","국밥","고기","해산물","면",
+  "중식","일식","초밥","스시","돈까스","양식","아시아",
+  "분식","치킨","피자","햄버거","샐러드","술집",
+  "배달"
 ];
 const CAT_EMOJI = {
-  "한식":"🍚","고기":"🥩","중식":"🥟","양식":"🍝","일식":"🍣",
-  "카페":"☕","분식":"🍢","치킨":"🍗","피자":"🍕","디저트":"🍰","배달":"🛵",
-  "기타":"📍"
+  "카페":"☕","디저트":"🍰","브런치":"🥐","베이커리":"🥖",
+  "한식":"🍚","국밥":"🥘","고기":"🥩","해산물":"🦞","면":"🍜",
+  "중식":"🥟","일식":"🍣","초밥":"🍣","스시":"🍣","돈까스":"🍖","양식":"🍝","아시아":"🍛",
+  "분식":"🍢","치킨":"🍗","피자":"🍕","햄버거":"🍔","샐러드":"🥗","술집":"🍺",
+  "배달":"🛵","기타":"📍"
 };
-
-function parseCats(str){
-  return String(str||"").split(",").map(s=>s.trim()).filter(Boolean);
+function parseCats(str){ return String(str||"").split(",").map(s=>s.trim()).filter(Boolean); }
+function pickMainCategory(categoryStr){
+  const cats = parseCats(categoryStr);
+  for (const p of CATEGORY_PRIORITY) if (cats.includes(p)) return p;
+  return cats[0] || "기타";
 }
 function emojiOf(cat){ return CAT_EMOJI[cat] || "📍"; }
 function esc(s){
@@ -330,74 +376,44 @@ function esc(s){
     .replaceAll('"',"&quot;")
     .replaceAll("'","&#039;");
 }
-function pickMainCategory(categoryStr){
-  const cats = parseCats(categoryStr);
-  for (const p of CATEGORY_PRIORITY) if (cats.includes(p)) return p;
-  return cats[0] || "기타";
-}
 
-/* =========================
-   인증맛집 판별
-========================= */
-function isVerifiedItem(item){
-  const v =
-    String(item.tier||"").toLowerCase()==="verified" ||
-    String(item.level||"").toLowerCase()==="verified" ||
-    String(item.kind||"").includes("인증") ||
-    String(item.type||"").includes("인증") ||
-    String(item.verified||"").toLowerCase()==="true" ||
-    String(item.star||"").toLowerCase()==="true";
-  return !!v;
-}
+/* ✅ 마커 아이콘 크기/앵커 고정 */
+const ICON_W = 110, ICON_H = 110;
+function iconSize(){ return new naver.maps.Size(ICON_W, ICON_H); }
+function iconAnchor(){ return new naver.maps.Point(Math.floor(ICON_W/2), ICON_H); }
 
-/* =========================
-   ✅ 인증 별 배지 (스타일 강화 버전)
-   - 골드 그라데이션 + 반짝 하이라이트 + 외곽 글로우
-========================= */
+/* ✅ 인증 배지(왕관) */
 function verifiedBadgeHtml(){
   return `
     <div style="
       position:absolute; top:-9px; right:-9px;
       width:22px; height:22px; border-radius:999px;
-      background: radial-gradient(circle at 30% 30%, #fff7c7 0%, #ffd86a 30%, #ffb400 60%, #ff8a00 100%);
+      background: linear-gradient(145deg,#ffe7a3,#ffb700);
       box-shadow:
-        0 10px 18px rgba(0,0,0,.20),
+        0 10px 18px rgba(0,0,0,.22),
         0 0 0 2px rgba(255,255,255,.95),
-        0 0 18px rgba(255,180,0,.55);
+        0 0 16px rgba(255,183,0,.6);
       display:flex; align-items:center; justify-content:center;
-      transform: rotate(-10deg);
     ">
-      <div style="
-        position:absolute; inset:2px;
-        border-radius:999px;
-        border:1px solid rgba(255,255,255,.55);
-      "></div>
-
-      <div style="
-        position:absolute; left:4px; top:4px;
-        width:7px; height:7px; border-radius:999px;
-        background: rgba(255,255,255,.85);
-        filter: blur(.2px);
-      "></div>
-
       <span style="
         font-size:13px;
-        color:#fff;
+        color:#7a4b00;
         font-weight:900;
-        text-shadow: 0 2px 2px rgba(0,0,0,.25);
+        text-shadow:0 1px 1px rgba(255,255,255,.6);
         line-height:1;
-        transform: translateY(-.5px);
-      ">★</span>
+      ">👑</span>
     </div>
   `;
 }
 
-/* =========================
-   마커 아이콘 (별표 포함)
-========================= */
-const ICON_W = 110, ICON_H = 110;
-function iconSize(){ return new naver.maps.Size(ICON_W, ICON_H); }
-function iconAnchor(){ return new naver.maps.Point(Math.floor(ICON_W/2), ICON_H); }
+/* ✅ 라벨 표시 규칙:
+   - 일반: 줌 15 이상(>14)
+   - 인증: 줌 13 이상(>=13) */
+function shouldShowLabel(item){
+  const z = map ? map.getZoom() : 14;
+  if (isVerifiedItem(item)) return z >= 13;
+  return z > 14;
+}
 
 function markerHtml(item, showLabel){
   const main = pickMainCategory(item.category);
@@ -406,16 +422,15 @@ function markerHtml(item, showLabel){
 
   return `
     <div style="transform: translate(-50%, -100%); display:flex; flex-direction:column; align-items:center; gap:6px; pointer-events:auto;">
-      <div style="position:relative;
-        width:38px; height:38px; border-radius:19px;
-        background:#fff; display:flex; align-items:center; justify-content:center;
-        font-size:22px; box-shadow:0 8px 20px rgba(0,0,0,.22);
-        border:1px solid rgba(0,0,0,.06);
-      ">
-        ${emoji}
+      <div style="position:relative;">
+        <div style="
+          width:38px; height:38px; border-radius:19px;
+          background:#fff; display:flex; align-items:center; justify-content:center;
+          font-size:22px; box-shadow:0 8px 20px rgba(0,0,0,.22);
+          border:1px solid rgba(0,0,0,.06);
+        ">${emoji}</div>
         ${badge}
       </div>
-
       ${showLabel ? `
         <div style="
           max-width:200px; background:#fff; padding:6px 10px; border-radius:999px;
@@ -447,14 +462,20 @@ function within500m(item){
 }
 
 /* =========================
-   카테고리 칩(데이터 기반: 등록된 것만)
+   카테고리 칩(다중 선택)
+   - ✅ 등록된 카테고리만 표시
 ========================= */
-const selectedCats = new Set(); // 비어있으면 전체
+const selectedCats = new Set();
 
+function setAllSelected(){
+  selectedCats.clear();
+  renderChipsState();
+  applyFiltersAndRender();
+}
 function buildChipsFromData(data){
   const set = new Set();
   data.forEach(it => parseCats(it.category).forEach(c => set.add(c)));
-  const cats = Array.from(set).filter(Boolean);
+  const cats = Array.from(set);
 
   cats.sort((a,b)=>{
     const ia = CATEGORY_PRIORITY.indexOf(a);
@@ -471,11 +492,7 @@ function buildChipsFromData(data){
   all.className = "chip on";
   all.dataset.cat = "__ALL__";
   all.textContent = "✨ 전체";
-  all.onclick = () => {
-    selectedCats.clear();
-    syncChipState();
-    applyFiltersAndRender();
-  };
+  all.onclick = () => setAllSelected();
   chipsEl.appendChild(all);
 
   cats.forEach(cat=>{
@@ -486,16 +503,16 @@ function buildChipsFromData(data){
     el.onclick = () => {
       if (selectedCats.has(cat)) selectedCats.delete(cat);
       else selectedCats.add(cat);
-      syncChipState();
-      applyFiltersAndRender();
+
+      if (selectedCats.size === 0) setAllSelected();
+      else { renderChipsState(); applyFiltersAndRender(); }
     };
     chipsEl.appendChild(el);
   });
 
-  syncChipState();
+  renderChipsState();
 }
-
-function syncChipState(){
+function renderChipsState(){
   const isAll = selectedCats.size === 0;
   chipsEl.querySelectorAll(".chip").forEach(ch=>{
     const cat = ch.dataset.cat;
@@ -503,7 +520,6 @@ function syncChipState(){
     else ch.classList.toggle("on", selectedCats.has(cat));
   });
 }
-
 function matchCategory(item){
   if (selectedCats.size === 0) return true;
   const cats = parseCats(item.category);
@@ -511,18 +527,13 @@ function matchCategory(item){
 }
 
 /* =========================
-   상단 토글 이벤트
+   UI 이벤트
 ========================= */
-verifiedBtnEl.addEventListener("click", ()=>{
-  verifiedOnly = !verifiedOnly;
-  verifiedBtnEl.classList.toggle("on", verifiedOnly);
-  applyFiltersAndRender();
-});
-
 nearBtnEl.addEventListener("click", ()=>{
   useNear = !useNear;
   nearBtnEl.classList.toggle("on", useNear);
 
+  // ✅ 500m ON일 때만 위치 추적 시작
   if (useNear) startWatchLocation();
   else stopWatchLocation();
 
@@ -535,21 +546,21 @@ document.getElementById("fabReport").addEventListener("click", ()=>{
 
 document.getElementById("btnMyLoc").addEventListener("click", ()=>{
   if (!map) return;
-  if (!userPos){
-    alert("내 위치가 아직 없어요. 500m를 켜서 위치를 잡아주세요!");
-    return;
-  }
+  if (!userPos){ alert("현재 위치를 아직 못 찾았어요. 500m를 ON 해줘!"); return; }
   map.panTo(new naver.maps.LatLng(userPos.lat, userPos.lng));
   if (map.getZoom() < 16) map.setZoom(16, true);
 });
 
-/* 바텀시트 버튼들 */
+/* ✅ 바텀시트 버튼들 */
 document.getElementById("btnCloseSheet").addEventListener("click", closeSheet);
 document.getElementById("btnOpenNaver").addEventListener("click", openNaverMap);
+
+/* ✅ 댓글 달기 버튼 */
 document.getElementById("btnAddComment").addEventListener("click", addCommentFromUI);
 
 /* =========================
    지도 초기화
+   - ✅ 처음엔 위치 안 잡음 (장항지구 고정)
 ========================= */
 function initMap(){
   if (!naver?.maps) {
@@ -569,25 +580,27 @@ function initMap(){
   loadRestaurants();
 }
 
-/* =========================
-   위치 감시 (500m ON일 때만)
-========================= */
+/* ✅ 500m ON일 때만 위치 추적 시작 */
 function startWatchLocation(){
-  if (watchId) return;
+  if (watchId !== null) return; // 이미 시작됨
   if (!navigator.geolocation){
     statusTextEl.textContent = "이 기기에서 위치 사용 불가";
     return;
   }
 
-  statusTextEl.textContent = "500m: 위치 확인 중…(허용 눌러줘)";
+  statusTextEl.textContent = "위치 확인 중…(허용 눌러줘)";
 
   navigator.geolocation.getCurrentPosition(
     (pos)=>{
       userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
       updateMyLocationOverlay();
       applyFiltersAndRender();
+      statusTextEl.textContent = "위치 확인됨";
     },
-    (err)=>{ console.warn("초기 위치 실패:", err); },
+    (err)=>{
+      console.warn("초기 위치 실패:", err);
+      statusTextEl.textContent = "위치 잡는 중…(조금만 기다려줘)";
+    },
     { enableHighAccuracy:false, timeout:5000, maximumAge:60000 }
   );
 
@@ -599,16 +612,17 @@ function startWatchLocation(){
     },
     (err)=>{
       console.warn("위치 오류:", err);
-      if (err.code === 1) statusTextEl.textContent = "500m: 위치 권한 필요(허용 눌러줘)";
-      else if (err.code === 3) statusTextEl.textContent = "500m: 위치가 늦게 잡혀요(실외/정확한 위치 ON 추천)";
-      else statusTextEl.textContent = "500m: 위치 사용 불가";
+      if (err.code === 1) statusTextEl.textContent = "내주변 500m: 위치 권한 필요(허용 눌러줘)";
+      else if (err.code === 3) statusTextEl.textContent = "위치가 늦게 잡혀요(실외/정확한 위치 ON 추천)";
+      else statusTextEl.textContent = "위치 사용 불가";
     },
     { enableHighAccuracy:true, timeout:20000, maximumAge:5000 }
   );
 }
 
+/* ✅ 500m OFF면 위치 추적 중지 + 내 위치 오버레이 제거 */
 function stopWatchLocation(){
-  if (watchId){
+  if (watchId !== null){
     navigator.geolocation.clearWatch(watchId);
     watchId = null;
   }
@@ -616,6 +630,8 @@ function stopWatchLocation(){
 
   if (myMarker){ myMarker.setMap(null); myMarker = null; }
   if (myCircle){ myCircle.setMap(null); myCircle = null; }
+
+  statusTextEl.textContent = "장항지구 기준";
 }
 
 function updateMyLocationOverlay(){
@@ -665,10 +681,10 @@ function loadRestaurants(){
         console.error(json);
         return;
       }
-
       allData = json.data || [];
       buildChipsFromData(allData);
       applyFiltersAndRender();
+      statusTextEl.textContent = "장항지구 기준";
     })
     .catch(err=>{
       console.error(err);
@@ -677,35 +693,31 @@ function loadRestaurants(){
 }
 
 /* =========================
-   마커 렌더/업데이트
+   마커 렌더
 ========================= */
 function clearMarkers(){
   markers.forEach(m => m.marker.setMap(null));
   markers.length = 0;
 }
-
 function updateMarkerIcons(){
   if (!map) return;
-  const showLabel = map.getZoom() > 14;
   markers.forEach(({ marker, item }) => {
     marker.setIcon({
-      content: markerHtml(item, showLabel),
+      content: markerHtml(item, shouldShowLabel(item)),
       size: iconSize(),
       anchor: iconAnchor()
     });
   });
 }
-
 function renderMarkers(data){
   clearMarkers();
-  const showLabel = map.getZoom() > 14;
 
   data.forEach(item=>{
     const marker = new naver.maps.Marker({
       position: new naver.maps.LatLng(item.lat, item.lng),
       map,
       icon:{
-        content: markerHtml(item, showLabel),
+        content: markerHtml(item, shouldShowLabel(item)),
         size: iconSize(),
         anchor: iconAnchor()
       }
@@ -728,9 +740,7 @@ function applyFiltersAndRender(){
   if (!map) return;
 
   const filtered = allData.filter(it=>{
-    if (verifiedOnly && !isVerifiedItem(it)) return false;
     if (!matchCategory(it)) return false;
-
     if (useNear){
       if (!userPos) return false;
       return within500m(it);
@@ -740,20 +750,16 @@ function applyFiltersAndRender(){
 
   renderMarkers(filtered);
 
-  const tagNear = useNear ? " (500m)" : "";
-  const tagVer = verifiedOnly ? " (인증)" : "";
-  statusTextEl.textContent = `표시 ${filtered.length}개${tagNear}${tagVer}`;
+  if (useNear && !userPos) statusTextEl.textContent = "내주변 500m: 위치 권한 필요(허용 눌러줘)";
+  else statusTextEl.textContent = `표시 ${filtered.length}개${useNear ? " (500m)" : ""}`;
 }
 
 /* =========================
-   바텀시트 + desc 표시
+   바텀시트 + 댓글
 ========================= */
 function showSheet(item){
-  document.getElementById("sName").textContent = (item.name || "") + (isVerifiedItem(item) ? " ★" : "");
+  document.getElementById("sName").textContent = item.name || "";
   document.getElementById("sAddr").textContent = item.address || "";
-
-  const desc = String(item.desc || item.description || "").trim();
-  document.getElementById("sDesc").textContent = desc ? desc : "";
 
   const cats = parseCats(item.category);
   const tags = parseCats(item.tags);
@@ -761,18 +767,26 @@ function showSheet(item){
   const pills = [];
   if (cats.length) pills.push(...cats.map(c => `<span class="pill">${esc(c)}</span>`));
   if (tags.length) pills.push(...tags.map(t => `<span class="pill">#${esc(t)}</span>`));
-
   document.getElementById("sMeta").innerHTML = pills.join("");
+
+  // ✅ desc 표시
+  const descEl = document.getElementById("sDesc");
+  const desc = String(item.desc || "").trim();
+  if (desc){
+    descEl.style.display = "block";
+    descEl.textContent = desc;
+  } else {
+    descEl.style.display = "none";
+    descEl.textContent = "";
+  }
+
   document.getElementById("sheet").classList.add("show");
 }
-
 function closeSheet(){
   document.getElementById("sheet").classList.remove("show");
 }
 
-/* =========================
-   댓글
-========================= */
+/* 댓글 */
 function renderComments(list){
   cmtListEl.innerHTML = "";
   if (!list || list.length === 0){
@@ -844,19 +858,38 @@ async function addCommentFromUI(){
 }
 
 /* =========================
-   네이버지도 이동: placeUrl 우선
+   네이버지도 이동
+   - ✅ placeUrl 있으면 그걸로 우선 이동
 ========================= */
 function openNaverMap(){
   if (!selected) return;
 
-  const placeUrl = String(selected.placeUrl || selected.placeURL || "").trim();
+  const placeUrl = String(selected.placeUrl || "").trim();
   if (placeUrl){
     window.open(placeUrl, "_blank");
     return;
   }
 
   const name = encodeURIComponent(selected.name || "");
-  window.open("https://map.naver.com/v5/search/" + name, "_blank");
+  const lat = selected.lat;
+  const lng = selected.lng;
+  const appname = encodeURIComponent("장항지구맛집");
+
+  const ua = navigator.userAgent.toLowerCase();
+  if (ua.includes("android")) {
+    const url = "intent://place?lat=" + lat + "&lng=" + lng + "&name=" + name + "&appname=" + appname +
+      "#Intent;scheme=nmap;package=com.nhn.android.nmap;end";
+    window.open(url, "_blank");
+  } else if (/iphone|ipad/.test(ua)) {
+    const link = document.createElement("a");
+    link.href = "nmap://place?lat=" + lat + "&lng=" + lng + "&name=" + name + "&appname=" + appname;
+    link.target = "_blank";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } else {
+    window.open("https://map.naver.com/v5/search/" + name, "_blank");
+  }
 }
 
 /* =========================
