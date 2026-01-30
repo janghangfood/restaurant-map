@@ -9,7 +9,7 @@
 <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=g7937mmgwu"></script>
 
 <style>
-html, body { margin:0; padding:0; height:100%; font-family:-apple-system, BlinkMacSystemFont, 'Noto Sans KR'; }
+html, body { margin:0; padding:0; height:100%; font-family:-apple-system, BlinkMacSystemFont, 'Noto Sans KR', sans-serif; }
 #map { width:100%; height:100%; position:relative; z-index:1; }
 
 /* ✅ 상단 UI */
@@ -102,6 +102,7 @@ html, body { margin:0; padding:0; height:100%; font-family:-apple-system, BlinkM
   font-weight:900; cursor:pointer; border:0; width:100%;
 }
 .btn.secondary{ background:#111; margin-top:8px; }
+.btn:disabled{ opacity:.6; cursor:not-allowed; }
 
 /* 댓글 */
 .cmtBox{ margin-top:14px; }
@@ -113,6 +114,7 @@ html, body { margin:0; padding:0; height:100%; font-family:-apple-system, BlinkM
 .cmtNick{ font-weight:900; font-size:12px; }
 .cmtTime{ font-size:10px; color:#777; white-space:nowrap; }
 .cmtStars{ font-size:12px; letter-spacing:1px; }
+.cmtContent{ margin-top:6px; font-size:12px; line-height:1.35; }
 
 .formRow{ display:flex; gap:8px; margin-top:10px; }
 .input{ flex:1; padding:10px 12px; border-radius:12px; border:1px solid rgba(0,0,0,.12); font-size:12px; }
@@ -131,6 +133,81 @@ textarea.input{ min-height:70px; resize:none; }
 }
 .starBtn.on{ border-color: rgba(3,199,90,.35); }
 .ratingHint{ font-size:11px; color:#666; }
+
+/* ✅ 로딩 바 (댓글용) */
+.progressWrap{
+  position:sticky; top:0;
+  z-index:6;
+  height:3px;
+  border-radius:999px;
+  overflow:hidden;
+  background:rgba(0,0,0,.06);
+  display:none;
+}
+.progressWrap.show{ display:block; }
+.progressBar{
+  width:35%;
+  height:100%;
+  background:#03c75a;
+  transform: translateX(-120%);
+  animation: progressMove 1.0s infinite linear;
+}
+@keyframes progressMove {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(320%); }
+}
+
+/* ✅ 팝업(모달) */
+.modal{
+  position:fixed; inset:0;
+  background:rgba(0,0,0,.35);
+  z-index:10000;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+}
+.modal.show{ display:flex; }
+.modalCard{
+  width:min(360px, 92vw);
+  background:#fff;
+  border-radius:18px;
+  box-shadow:0 16px 40px rgba(0,0,0,.25);
+  padding:14px 14px 12px;
+  border:1px solid rgba(0,0,0,.06);
+}
+.modalTitle{ font-weight:900; font-size:14px; color:#111; }
+.modalMsg{ margin-top:6px; font-size:12px; color:#444; line-height:1.35; }
+.modalBtns{ display:flex; gap:8px; margin-top:12px; }
+.mbtn{
+  flex:1;
+  padding:10px 12px;
+  border-radius:12px;
+  border:0;
+  font-weight:900;
+  cursor:pointer;
+}
+.mbtn.ok{ background:#03c75a; color:#fff; }
+.mbtn.dark{ background:#111; color:#fff; }
+.mbtn.ghost{ background:#f2f2f2; color:#111; }
+
+/* ✅ 토스트 */
+.toast{
+  position:fixed;
+  left:50%;
+  transform:translateX(-50%);
+  bottom:18px;
+  z-index:10001;
+  background:rgba(17,17,17,.92);
+  color:#fff;
+  padding:10px 12px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:900;
+  box-shadow:0 12px 24px rgba(0,0,0,.22);
+  display:none;
+}
+.toast.show{ display:block; }
 </style>
 </head>
 
@@ -162,6 +239,11 @@ textarea.input{ min-height:70px; resize:none; }
 <div id="sheet" class="sheet">
   <div class="close-btn">
     <button class="close-x" id="btnCloseSheet" type="button">×</button>
+  </div>
+
+  <!-- ✅ 댓글 로딩바(시트 상단 고정) -->
+  <div class="progressWrap" id="cmtProgress">
+    <div class="progressBar"></div>
   </div>
 
   <div class="sheetTitle" id="sName"></div>
@@ -200,9 +282,21 @@ textarea.input{ min-height:70px; resize:none; }
   </div>
 </div>
 
+<!-- ✅ 팝업(모달) -->
+<div class="modal" id="modal">
+  <div class="modalCard">
+    <div class="modalTitle" id="modalTitle">안내</div>
+    <div class="modalMsg" id="modalMsg"></div>
+    <div class="modalBtns" id="modalBtns"></div>
+  </div>
+</div>
+
+<!-- ✅ 토스트 -->
+<div class="toast" id="toast"></div>
+
 <script>
 /******** 설정 ********/
-const API_URL = "https://twilight-art-ed3c.wlalsqqq.workers.dev"; // ✅ Worker(여기 유지)
+const API_URL = "https://twilight-art-ed3c.wlalsqqq.workers.dev"; // ✅ Worker
 const REPORT_URL = "./submit.html";
 /************************/
 
@@ -217,9 +311,11 @@ const cmtStatusEl = document.getElementById("cmtStatus");
 const nickInputEl = document.getElementById("nickInput");
 const contentInputEl = document.getElementById("contentInput");
 const ratingSummaryEl = document.getElementById("ratingSummary");
+const cmtProgressEl = document.getElementById("cmtProgress");
 
 const nearBtnEl = document.getElementById("nearBtn");
 const vipBtnEl = document.getElementById("vipBtn");
+const btnAddCommentEl = document.getElementById("btnAddComment");
 
 let useNear = false;
 let useVipOnly = false;
@@ -231,6 +327,49 @@ let userPos = null;
 let myMarker = null;
 let myCircle = null;
 let watchId = null;
+
+/* =========================
+   ✅ 팝업/토스트 유틸
+========================= */
+const modalEl = document.getElementById("modal");
+const modalTitleEl = document.getElementById("modalTitle");
+const modalMsgEl = document.getElementById("modalMsg");
+const modalBtnsEl = document.getElementById("modalBtns");
+const toastEl = document.getElementById("toast");
+
+function showToast(msg, ms=1800){
+  toastEl.textContent = msg;
+  toastEl.classList.add("show");
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(()=>toastEl.classList.remove("show"), ms);
+}
+
+function showModal({ title="안내", message="", buttons=[] }){
+  modalTitleEl.textContent = title;
+  modalMsgEl.textContent = message;
+  modalBtnsEl.innerHTML = "";
+
+  const btns = buttons.length ? buttons : [{ text:"확인", kind:"ok", onClick: hideModal }];
+  btns.forEach(b=>{
+    const el = document.createElement("button");
+    el.className = "mbtn " + (b.kind || "ok");
+    el.textContent = b.text || "확인";
+    el.onclick = ()=>{ try{ b.onClick && b.onClick(); } finally { if (b.autoClose !== false) hideModal(); } };
+    modalBtnsEl.appendChild(el);
+  });
+
+  modalEl.classList.add("show");
+}
+function hideModal(){ modalEl.classList.remove("show"); }
+modalEl.addEventListener("click", (e)=>{ if (e.target === modalEl) hideModal(); });
+
+function showBusyModal(message){
+  showModal({
+    title: "처리 중…",
+    message: message || "요청 중입니다. 잠시만 기다려주세요.",
+    buttons: [{ text:"닫기", kind:"ghost", onClick: hideModal }]
+  });
+}
 
 /* =========================
    deviceId (IP 대신 현실적인 중복 방지 키)
@@ -379,27 +518,25 @@ function renderChipsState(){
     else ch.classList.toggle("on", selectedCats.has(cat));
   });
 }
-  function formatKST(v){
-  const s = String(v ?? "").trim();
-  if (!s) return "";
-
-  // 이미 원하는 포맷이면 그대로
-  // 예) 2026-01-29 19:51
-  if (/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}$/.test(s)) return s;
-
-  // Thu Jan 29 2026 19:51:00 GMT+0900 (...) 형태면 Date로 파싱
-  // ISO(2026-01-29T10:51:00.000Z)도 여기로 걸림
-  const d = new Date(s);
-  if (isNaN(d.getTime())) return s;
-
-  const pad = (n)=> String(n).padStart(2,"0");
-  // 사용자가 KST로 보고 싶으니 로컬(휴대폰) 기준으로 출력
-  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-  }
 function matchCategory(item){
   if (selectedCats.size === 0) return true;
   const cats = parseCats(item.category);
   return cats.some(c => selectedCats.has(c));
+}
+
+/* =========================
+   createdAt 표시(KST)
+========================= */
+function formatKST(v){
+  const s = String(v ?? "").trim();
+  if (!s) return "";
+  if (/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}$/.test(s)) return s;
+
+  const d = new Date(s);
+  if (isNaN(d.getTime())) return s;
+
+  const pad = (n)=> String(n).padStart(2,"0");
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
 /* =========================
@@ -517,21 +654,21 @@ document.getElementById("fabReport").addEventListener("click", ()=>{ location.hr
 
 document.getElementById("btnMyLoc").addEventListener("click", ()=>{
   if (!map) return;
-  if (!navigator.geolocation){ alert("이 기기에서 위치 사용 불가"); return; }
+  if (!navigator.geolocation){ showToast("이 기기에서 위치 사용 불가"); return; }
   navigator.geolocation.getCurrentPosition(
     (pos)=>{
       userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
       map.panTo(new naver.maps.LatLng(userPos.lat, userPos.lng));
       if (map.getZoom() < 16) map.setZoom(16, true);
     },
-    ()=> alert("현재 위치를 못 찾았어요. 위치 권한을 허용해줘!"),
+    ()=> showToast("현재 위치를 못 찾았어요. 위치 권한을 허용해줘!"),
     { enableHighAccuracy:true, timeout:8000, maximumAge:5000 }
   );
 });
 
 document.getElementById("btnCloseSheet").addEventListener("click", closeSheet);
 document.getElementById("btnOpenNaver").addEventListener("click", openNaverMap);
-document.getElementById("btnAddComment").addEventListener("click", addCommentFromUI);
+btnAddCommentEl.addEventListener("click", addCommentFromUI);
 
 /* =========================
    지도 초기화
@@ -558,14 +695,30 @@ function initMap(){
 }
 
 /* =========================
-   데이터 로드
+   ✅ 데이터 로드 (로컬 캐시 선표시 + 최신 갱신)
 ========================= */
 function loadRestaurants(){
-  fetch(API_URL + "?action=list")
+  // 1) 캐시 선표시
+  try{
+    const cached = localStorage.getItem("jh_food_list_cache");
+    if (cached){
+      const parsed = JSON.parse(cached);
+      if (Array.isArray(parsed)){
+        allData = parsed;
+        buildChipsFromData(allData);
+        applyFiltersAndRender();
+        statusTextEl.textContent = `표시 ${allData.length}개 (캐시)`;
+      }
+    }
+  }catch(e){}
+
+  // 2) 최신 데이터 요청
+  fetch(API_URL + "?action=list", { cache: "no-store" })
     .then(r=>r.json())
     .then(json=>{
       if (!json.ok){ statusTextEl.textContent="데이터 로드 실패"; return; }
       allData = json.data || [];
+      try{ localStorage.setItem("jh_food_list_cache", JSON.stringify(allData)); }catch(e){}
       buildChipsFromData(allData);
       applyFiltersAndRender();
     })
@@ -573,7 +726,7 @@ function loadRestaurants(){
 }
 
 /* =========================
-   마커 렌더
+   마커 렌더 (Batch)
 ========================= */
 function clearMarkers(){
   markers.forEach(m => m.marker.setMap(null));
@@ -584,25 +737,41 @@ function updateMarkerIcons(){
   const showLabel = map.getZoom() > 14;
   markers.forEach(({ marker, item }) => marker.setIcon({ content: markerHtml(item, showLabel) }));
 }
+
+let renderToken = 0;
 function renderMarkers(data){
   clearMarkers();
   const showLabel = map.getZoom() > 14;
 
-  data.forEach(item=>{
-    const marker = new naver.maps.Marker({
-      position: new naver.maps.LatLng(item.lat, item.lng),
-      map,
-      icon:{ content: markerHtml(item, showLabel) }
-    });
+  const token = ++renderToken;
+  const BATCH = 50;
+  let i = 0;
 
-    naver.maps.Event.addListener(marker, "click", ()=>{
-      selected = item;
-      showSheet(item);
-      loadComments(item.id);
-    });
+  function step(){
+    if (token !== renderToken) return;
+    const end = Math.min(i + BATCH, data.length);
 
-    markers.push({ marker, item });
-  });
+    for (; i < end; i++){
+      const item = data[i];
+      const marker = new naver.maps.Marker({
+        position: new naver.maps.LatLng(item.lat, item.lng),
+        map,
+        icon:{ content: markerHtml(item, showLabel) }
+      });
+
+      naver.maps.Event.addListener(marker, "click", ()=>{
+        selected = item;
+        showSheet(item);
+        loadCommentsSmart(item.id);
+      });
+
+      markers.push({ marker, item });
+    }
+
+    if (i < data.length) requestAnimationFrame(step);
+  }
+
+  requestAnimationFrame(step);
 }
 
 /* =========================
@@ -649,7 +818,9 @@ function showSheet(item){
 
   document.getElementById("sMeta").innerHTML = pills.join("");
   ratingSummaryEl.textContent = "";
-  selectedRating = 0;         // ✅ 매장 열 때 초기화
+
+  // ✅ 입력/별점 초기화
+  selectedRating = 0;
   paintStars(0);
 
   document.getElementById("sheet").classList.add("show");
@@ -659,14 +830,12 @@ function closeSheet(){ document.getElementById("sheet").classList.remove("show")
 /* 댓글 렌더 + 평균 */
 function starsText(r){
   const n = Math.max(0, Math.min(5, Math.round(Number(r) || 0)));
-  // 빈별을 ✩ 로 바꿔서 “무조건 5개 꽉찬 것처럼 보이는” 문제 방지
   return "★".repeat(n) + "✩".repeat(5-n) + ` (${n}점)`;
 }
 
 function renderComments(list){
   cmtListEl.innerHTML = "";
 
-  // 평균 계산
   const ratings = (list||[]).map(x => Number(x.rating)).filter(v => Number.isFinite(v) && v>=1 && v<=5);
   if (ratings.length){
     const avg = (ratings.reduce((a,b)=>a+b,0) / ratings.length);
@@ -696,37 +865,116 @@ function renderComments(list){
         </div>
         <div class="cmtTime">${time}</div>
       </div>
-      <div class="cmtContent" style="margin-top:6px; font-size:12px; line-height:1.35;">${content}</div>
+      <div class="cmtContent">${content}</div>
     `;
     cmtListEl.appendChild(el);
   });
 }
 
-async function loadComments(restaurantId){
-  if (!restaurantId) return;
-  cmtStatusEl.textContent = "댓글 불러오는 중…";
+/* =========================
+   ✅ 댓글: 빠른 UX (캐시 선표시 + 최신 갱신 + 로딩바 + 중복요청 취소)
+========================= */
+const COMMENT_TTL_MS = 30_000; // 30초 캐시(원하면 5~10초로 줄여도 됨)
+const commentMem = new Map();  // restaurantId -> { ts, data }
+let commentAbort = null;
+
+function commentCacheKey(rid){ return "jh_food_cmt_" + rid; }
+
+function showCommentProgress(on){
+  cmtProgressEl.classList.toggle("show", !!on);
+}
+
+function getCachedComments(rid){
+  // 1) 메모리 캐시
+  const m = commentMem.get(rid);
+  if (m && (Date.now() - m.ts) < COMMENT_TTL_MS) return m.data;
+
+  // 2) localStorage 캐시
   try{
-    const res = await fetch(API_URL + `?action=comments&restaurantId=${encodeURIComponent(restaurantId)}`);
-    const json = await res.json();
-    if (!json.ok) throw new Error(json.error || "댓글 로드 실패");
-    renderComments(json.data || []);
-    cmtStatusEl.textContent = "";
+    const raw = localStorage.getItem(commentCacheKey(rid));
+    if (!raw) return null;
+    const obj = JSON.parse(raw);
+    if (!obj || !Array.isArray(obj.data) || !obj.ts) return null;
+    if ((Date.now() - obj.ts) > COMMENT_TTL_MS) return null;
+    commentMem.set(rid, { ts: obj.ts, data: obj.data });
+    return obj.data;
   }catch(e){
-    cmtStatusEl.textContent = "댓글을 불러오지 못했어요.";
+    return null;
   }
 }
 
+function setCachedComments(rid, data){
+  const ts = Date.now();
+  commentMem.set(rid, { ts, data });
+  try{
+    localStorage.setItem(commentCacheKey(rid), JSON.stringify({ ts, data }));
+  }catch(e){}
+}
+
+async function loadCommentsSmart(restaurantId){
+  if (!restaurantId) return;
+
+  // 이전 요청 취소
+  try{ if (commentAbort) commentAbort.abort(); }catch(e){}
+  commentAbort = new AbortController();
+
+  // ✅ 캐시 선표시
+  const cached = getCachedComments(restaurantId);
+  if (cached){
+    renderComments(cached);
+    cmtStatusEl.textContent = "댓글 최신화 중…";
+  } else {
+    cmtListEl.innerHTML = `<div class="mini">댓글 불러오는 중…</div>`;
+    cmtStatusEl.textContent = "";
+  }
+
+  showCommentProgress(true);
+
+  try{
+    const res = await fetch(API_URL + `?action=comments&restaurantId=${encodeURIComponent(restaurantId)}`, {
+      cache: "no-store",
+      signal: commentAbort.signal
+    });
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error || "댓글 로드 실패");
+
+    const list = json.data || [];
+    setCachedComments(restaurantId, list);
+    renderComments(list);
+    cmtStatusEl.textContent = "";
+  }catch(e){
+    // 취소는 조용히
+    if (e.name === "AbortError") return;
+    cmtStatusEl.textContent = "댓글을 불러오지 못했어요.";
+    if (!cached) showToast("댓글 로드 실패");
+  }finally{
+    showCommentProgress(false);
+  }
+}
+
+/* =========================
+   ✅ 댓글 등록: 팝업 + 로딩바 + 버튼 잠금 + 성공/실패 팝업
+========================= */
 async function addCommentFromUI(){
   if (!selected?.id) return;
 
   const nickname = nickInputEl.value.trim();
   const content = contentInputEl.value.trim();
 
-  if (!selectedRating) { alert("평점을 선택해줘(1~5)"); return; }
-  if (!nickname) { alert("닉네임을 입력해줘"); return; }
-  if (!content) { alert("댓글 내용을 입력해줘"); return; }
+  if (!selectedRating) { showModal({ title:"확인", message:"평점을 선택해줘(1~5)" }); return; }
+  if (!nickname) { showModal({ title:"확인", message:"닉네임을 입력해줘" }); return; }
+  if (!content) { showModal({ title:"확인", message:"댓글 내용을 입력해줘" }); return; }
 
-  cmtStatusEl.textContent = "등록 중…";
+  // UI 잠금
+  btnAddCommentEl.disabled = true;
+  showCommentProgress(true);
+
+  showModal({
+    title: "등록 요청 중…",
+    message: "잠시만 기다려주세요.",
+    buttons: [{ text:"닫기", kind:"ghost", onClick: hideModal }]
+  });
+
   try{
     const res = await fetch(API_URL, {
       method:"POST",
@@ -742,17 +990,39 @@ async function addCommentFromUI(){
         }
       })
     });
+
     const json = await res.json();
     if (!json.ok) throw new Error(json.error || "댓글 등록 실패");
 
+    // 입력 초기화
     contentInputEl.value = "";
     selectedRating = 0;
     paintStars(0);
-    await loadComments(selected.id);
-    cmtStatusEl.textContent = "";
+
+    // ✅ 캐시 무효화 후 최신 로드
+    try{ localStorage.removeItem(commentCacheKey(selected.id)); }catch(e){}
+    commentMem.delete(selected.id);
+
+    hideModal();
+    showModal({
+      title: "등록 완료",
+      message: "댓글이 등록됐어요 🙂",
+      buttons: [{ text:"확인", kind:"ok", onClick: hideModal }]
+    });
+
+    await loadCommentsSmart(selected.id);
   }catch(e){
-    cmtStatusEl.textContent = "댓글 등록 실패";
-    alert("댓글 등록 실패: " + (e.message || ""));
+    hideModal();
+    showModal({
+      title: "등록 실패",
+      message: String(e.message || e || "unknown"),
+      buttons: [
+        { text:"확인", kind:"ok", onClick: hideModal }
+      ]
+    });
+  }finally{
+    btnAddCommentEl.disabled = false;
+    showCommentProgress(false);
   }
 }
 
@@ -761,13 +1031,11 @@ async function addCommentFromUI(){
 ========================= */
 function openNaverMap(){
   if (!selected) return;
-
   const placeUrl = String(selected.placeUrl || "").trim();
   if (placeUrl){
     window.open(placeUrl, "_blank");
     return;
   }
-
   const name = encodeURIComponent(selected.name || "");
   window.open("https://map.naver.com/v5/search/" + name, "_blank");
 }
