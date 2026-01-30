@@ -12,30 +12,90 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Noto Sans KR",sans-serif;marg
 h1{font-size:18px;margin:0 0 6px;}
 .sub{font-size:13px;color:#666;margin:0 0 14px;line-height:1.4;}
 label{display:block;font-size:13px;color:#333;margin:12px 0 6px;font-weight:900;}
+.req{color:#03c75a;font-weight:900;margin-left:4px;}
 input, textarea{width:100%;box-sizing:border-box;padding:12px;border:1px solid #ddd;border-radius:12px;font-size:14px;background:#fff;}
 textarea{min-height:84px;resize:vertical;}
 .chips{display:flex;flex-wrap:wrap;gap:8px;}
-.chip{padding:9px 10px;border-radius:999px;border:1px solid #ddd;background:#fff;font-size:13px;user-select:none;font-weight:900;}
+.chip{padding:9px 10px;border-radius:999px;border:1px solid #ddd;background:#fff;font-size:13px;user-select:none;font-weight:900;cursor:pointer;}
 .chip.active{border-color:#03c75a;background:#03c75a1a;}
 .row{display:flex;gap:10px;}
 .row > *{flex:1;}
 .btn{margin-top:14px;width:100%;padding:14px;border:0;border-radius:14px;background:#03c75a;color:#fff;font-weight:900;font-size:15px;cursor:pointer;}
 .btn.secondary{background:#111;}
-.toast{margin-top:12px;padding:12px;border-radius:12px;background:#111;color:#fff;font-size:13px;display:none;}
-.toast.show{display:block;}
+.btn:disabled{opacity:.6;cursor:not-allowed;}
 .small{margin-top:10px;color:#777;font-size:12px;line-height:1.35;}
-/* 필수 표시 */
-.req{color:#03c75a;font-weight:900;margin-left:4px;}
+
+/* ✅ 팝업(모달) */
+.modal{
+  position:fixed; inset:0;
+  background:rgba(0,0,0,.35);
+  z-index:10000;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+}
+.modal.show{ display:flex; }
+.modalCard{
+  width:min(360px, 92vw);
+  background:#fff;
+  border-radius:18px;
+  box-shadow:0 16px 40px rgba(0,0,0,.25);
+  padding:14px 14px 12px;
+  border:1px solid rgba(0,0,0,.06);
+}
+.modalTitle{ font-weight:900; font-size:14px; color:#111; }
+.modalMsg{ margin-top:6px; font-size:12px; color:#444; line-height:1.35; white-space:pre-line; }
+.modalBtns{ display:flex; gap:8px; margin-top:12px; }
+.mbtn{
+  flex:1;
+  padding:10px 12px;
+  border-radius:12px;
+  border:0;
+  font-weight:900;
+  cursor:pointer;
+}
+.mbtn.ok{ background:#03c75a; color:#fff; }
+.mbtn.dark{ background:#111; color:#fff; }
+.mbtn.ghost{ background:#f2f2f2; color:#111; }
+
+/* ✅ 상단 로딩바 */
+.progressTop{
+  position:fixed; left:0; top:0; right:0;
+  height:3px;
+  background:rgba(0,0,0,.06);
+  z-index:10001;
+  display:none;
+}
+.progressTop.show{ display:block; }
+.progressBar{
+  width:35%;
+  height:100%;
+  background:#03c75a;
+  transform: translateX(-120%);
+  animation: progressMove 1.0s infinite linear;
+}
+@keyframes progressMove {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(320%); }
+}
 </style>
 </head>
 <body>
+
+<!-- ✅ 로딩바 -->
+<div class="progressTop" id="progressTop"><div class="progressBar"></div></div>
+
 <div class="wrap">
   <div class="card">
     <h1>장항지구 맛집 제보</h1>
-    <p class="sub">제보된 맛집은 관리자 확인 후 승인되면 지도에 표시돼요 🙂<br/>가능하면 <b>네이버 플레이스 링크</b>를 넣어주면 좋아요.</p>
+    <p class="sub">
+      제보된 맛집은 관리자 확인 후 승인되면 지도에 표시돼요 🙂<br/>
+      가능하면 <b>네이버 플레이스 링크</b>를 넣어주면 좋아요.
+    </p>
 
     <label>가게명 <span class="req">*</span></label>
-    <input id="name" placeholder="예) 포폴로피자" maxlength="40" />
+    <input id="name" placeholder="예) 대박각" maxlength="40" />
 
     <label>주소 <span class="req">*</span></label>
     <input id="address" placeholder="예) 고양시 일산동구 ..." maxlength="120" />
@@ -43,7 +103,7 @@ textarea{min-height:84px;resize:vertical;}
     <label>카테고리 (복수 선택) <span class="req">*</span></label>
     <div id="cats" class="chips"></div>
 
-    <!-- ✅ 한줄소개 필수로 변경 -->
+    <!-- ✅ 한줄소개 필수 -->
     <label>한줄 소개 <span class="req">*</span></label>
     <textarea id="desc" placeholder="예) 양 많고 가성비 좋아요" maxlength="200"></textarea>
 
@@ -61,13 +121,21 @@ textarea{min-height:84px;resize:vertical;}
       </div>
     </div>
 
-    <button class="btn" onclick="submitRestaurant()">제보하기</button>
-    <button class="btn secondary" onclick="goBack()">지도로 돌아가기</button>
+    <button class="btn" id="btnSubmit" type="button">제보하기</button>
+    <button class="btn secondary" type="button" onclick="goBack()">지도로 돌아가기</button>
 
-    <div id="toast" class="toast"></div>
     <div class="small">
-      * 평가 없이 작성된 제보는 반려처리 됩니다.
+      * 평가없이 작성된 제보는 반려처리 됩니다.
     </div>
+  </div>
+</div>
+
+<!-- ✅ 모달 -->
+<div class="modal" id="modal">
+  <div class="modalCard">
+    <div class="modalTitle" id="modalTitle">안내</div>
+    <div class="modalMsg" id="modalMsg"></div>
+    <div class="modalBtns" id="modalBtns"></div>
   </div>
 </div>
 
@@ -90,55 +158,116 @@ CATEGORY_MASTER.forEach(c=>{
   catsEl.appendChild(el);
 });
 
-function toast(msg){
-  const t = document.getElementById("toast");
-  t.textContent = msg;
-  t.classList.add("show");
-  clearTimeout(toast._t);
-  toast._t = setTimeout(()=>t.classList.remove("show"), 2500);
+/* ===== 모달/로딩 ===== */
+const modalEl = document.getElementById("modal");
+const modalTitleEl = document.getElementById("modalTitle");
+const modalMsgEl = document.getElementById("modalMsg");
+const modalBtnsEl = document.getElementById("modalBtns");
+const progressTopEl = document.getElementById("progressTop");
+
+function showProgress(on){ progressTopEl.classList.toggle("show", !!on); }
+
+function hideModal(){ modalEl.classList.remove("show"); }
+modalEl.addEventListener("click", (e)=>{ if(e.target === modalEl) hideModal(); });
+
+function showModal({ title="안내", message="", buttons=[] }){
+  modalTitleEl.textContent = title;
+  modalMsgEl.textContent = message;
+  modalBtnsEl.innerHTML = "";
+
+  const btns = buttons.length ? buttons : [{ text:"확인", kind:"ok", onClick: hideModal }];
+  btns.forEach(b=>{
+    const el = document.createElement("button");
+    el.className = "mbtn " + (b.kind || "ok");
+    el.textContent = b.text || "확인";
+    el.onclick = ()=>{ try{ b.onClick && b.onClick(); } finally { if (b.autoClose !== false) hideModal(); } };
+    modalBtnsEl.appendChild(el);
+  });
+
+  modalEl.classList.add("show");
+}
+
+/* ===== 제출 ===== */
+const btnSubmitEl = document.getElementById("btnSubmit");
+btnSubmitEl.addEventListener("click", submitRestaurant);
+
+function getVal(id){ return document.getElementById(id).value.trim(); }
+function clearForm(){
+  document.getElementById("name").value = "";
+  document.getElementById("address").value = "";
+  document.getElementById("desc").value = "";
+  document.getElementById("placeUrl").value = "";
+  document.getElementById("nickname").value = "";
+  document.getElementById("tags").value = "";
+  selected.clear();
+  document.querySelectorAll(".chip").forEach(ch => ch.classList.remove("active"));
 }
 
 async function submitRestaurant(){
-  const name = document.getElementById("name").value.trim();
-  const address = document.getElementById("address").value.trim();
+  const name = getVal("name");
+  const address = getVal("address");
   const category = [...selected].join(",");
 
   // ✅ 한줄소개 필수
-  const desc = document.getElementById("desc").value.trim();
+  const desc = getVal("desc");
 
-  const placeUrl = document.getElementById("placeUrl").value.trim();
-  const nickname = document.getElementById("nickname").value.trim();
-  const tags = document.getElementById("tags").value.trim();
+  const placeUrl = getVal("placeUrl");
+  const nickname = getVal("nickname");
+  const tags = getVal("tags");
 
-  if(!name || !address) return toast("가게명/주소는 꼭 입력해주세요!");
-  if(selected.size === 0) return toast("카테고리를 최소 1개 선택해주세요!");
-  if(!desc) return toast("한줄 소개는 꼭 입력해주세요!");
+  if(!name) return showModal({ title:"확인", message:"가게명은 꼭 입력해주세요" });
+  if(!address) return showModal({ title:"확인", message:"주소는 꼭 입력해주세요" });
+  if(selected.size === 0) return showModal({ title:"확인", message:"카테고리를 최소 1개 선택해주세요" });
+
+  // ✅ 한줄소개 필수 체크
+  if(!desc) return showModal({ title:"확인", message:"한줄 소개는 꼭 입력해줘!" });
+
+  // UI 잠금 + 로딩
+  btnSubmitEl.disabled = true;
+  showProgress(true);
+
+  showModal({
+    title: "등록 요청 중…",
+    message: "잠시만 기다려주세요.",
+    buttons: [{ text:"닫기", kind:"ghost", onClick: hideModal }]
+  });
 
   try{
     const res = await fetch(API_URL, {
       method:"POST",
       headers:{ "Content-Type":"application/json" },
       body: JSON.stringify({
-        action:"submit",
+        action:"submit", // (GAS가 submitRestaurant만 받으면 submitRestaurant로 바꿔줘)
         data:{ name, address, category, tags, placeUrl, desc, nickname }
       })
     });
+
     const json = await res.json();
-    if(!json.ok) return toast("제보 실패: " + (json.error || "unknown"));
+    if(!json.ok) throw new Error(json.error || "unknown");
 
-    toast("제보 완료! 승인되면 지도에 표시돼요 🙂");
+    hideModal();
+    showModal({
+      title:"등록 완료",
+      message:"제보가 접수됐어요 🙂\n관리자 승인 후 지도에 표시됩니다.",
+      buttons: [
+        { text:"확인", kind:"ok", onClick: hideModal },
+        { text:"추가 제보", kind:"ghost", onClick: ()=>{ clearForm(); }, autoClose:true }
+      ]
+    });
 
-    document.getElementById("name").value = "";
-    document.getElementById("address").value = "";
-    document.getElementById("desc").value = "";
-    document.getElementById("placeUrl").value = "";
-    document.getElementById("nickname").value = "";
-    document.getElementById("tags").value = "";
-    selected.clear();
-    document.querySelectorAll(".chip").forEach(ch => ch.classList.remove("active"));
+    clearForm();
   }catch(e){
-    console.error(e);
-    toast("네트워크 오류(콘솔 확인)");
+    hideModal();
+    showModal({
+      title:"등록 실패",
+      message:"제보 등록에 실패했어요.\n" + String(e.message || e),
+      buttons: [
+        { text:"확인", kind:"ok", onClick: hideModal }
+      ]
+    });
+  }finally{
+    btnSubmitEl.disabled = false;
+    showProgress(false);
   }
 }
 
