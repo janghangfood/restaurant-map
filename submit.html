@@ -21,8 +21,6 @@ textarea{min-height:84px;resize:vertical;}
 .row > *{flex:1;}
 .btn{margin-top:14px;width:100%;padding:14px;border:0;border-radius:14px;background:#03c75a;color:#fff;font-weight:900;font-size:15px;cursor:pointer;}
 .btn.secondary{background:#111;}
-.toast{margin-top:12px;padding:12px;border-radius:12px;background:#111;color:#fff;font-size:13px;display:none;}
-.toast.show{display:block;}
 .small{margin-top:10px;color:#777;font-size:12px;line-height:1.35;}
 </style>
 </head>
@@ -61,7 +59,6 @@ textarea{min-height:84px;resize:vertical;}
     <button class="btn" onclick="submitRestaurant()">제보하기</button>
     <button class="btn secondary" onclick="goBack()">지도로 돌아가기</button>
 
-    <div id="toast" class="toast"></div>
     <div class="small">
       * 관리자가 승인 후 지도에 표시돼요.
     </div>
@@ -87,7 +84,7 @@ CATEGORY_MASTER.forEach(c=>{
   catsEl.appendChild(el);
 });
 
-// ✅ 토스트 대신 팝업
+// ✅ 아래 토스트 대신 팝업(alert)
 function popup(msg){
   alert(msg);
 }
@@ -110,7 +107,7 @@ async function submitRestaurant(){
       method:"POST",
       headers:{ "Content-Type":"application/json" },
       body: JSON.stringify({
-        // ✅ action 이름 GAS와 통일
+        // ✅ GAS와 액션명 통일
         action:"submitRestaurant",
         data:{ name, address, category, tags, placeUrl, desc, nickname }
       })
