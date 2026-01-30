@@ -112,7 +112,7 @@ async function submitRestaurant(){
       method:"POST",
       headers:{ "Content-Type":"application/json" },
       body: JSON.stringify({
-        action:"submit",
+        action:"submitRestaurant",
         data:{ name, address, category, tags, placeUrl, desc, nickname }
       })
     });
