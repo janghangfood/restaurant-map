@@ -15,6 +15,7 @@ input{padding:10px 12px;border:1px solid #ddd;border-radius:12px;font-size:14px;
 .btn{padding:10px 12px;border:0;border-radius:12px;font-weight:900;cursor:pointer;}
 .btn.green{background:#03c75a;color:#fff;}
 .btn.dark{background:#111;color:#fff;}
+.btn:disabled{opacity:.55; cursor:not-allowed;}
 .list{display:flex;flex-direction:column;gap:10px;}
 .item{border:1px solid rgba(0,0,0,.08);border-radius:14px;padding:12px;}
 .title{font-weight:900;}
@@ -50,13 +51,19 @@ a:hover{text-decoration:underline;}
 const API_URL = "https://twilight-art-ed3c.wlalsqqq.workers.dev";
 const listEl = document.getElementById("list");
 const debugInfoEl = document.getElementById("debugInfo");
+const btnLoadEl = document.getElementById("btnLoad");
 
-document.getElementById("btnLoad").addEventListener("click", loadPending);
+btnLoadEl.addEventListener("click", loadPending);
 
 function esc(s){
   return String(s||"")
     .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
     .replaceAll('"',"&quot;").replaceAll("'","&#039;");
+}
+
+function setGlobalLoading(on){
+  btnLoadEl.disabled = !!on;
+  btnLoadEl.textContent = on ? "불러오는 중…" : "대기목록 불러오기";
 }
 
 async function loadPending(){
@@ -66,6 +73,7 @@ async function loadPending(){
   listEl.innerHTML = "불러오는 중…";
   debugInfoEl.style.display = "none";
   debugInfoEl.textContent = "";
+  setGlobalLoading(true);
 
   try{
     const res = await fetch(API_URL + "?action=submissions&adminKey=" + encodeURIComponent(adminKey));
@@ -74,7 +82,6 @@ async function loadPending(){
 
     const data = json.data || [];
 
-    // ✅ 응답 샘플 확인(문제 생길 때만 화면에 표시)
     if (data.length > 0){
       debugInfoEl.style.display = "block";
       debugInfoEl.textContent = "응답 샘플(첫 1건): " + JSON.stringify(data[0]);
@@ -87,7 +94,6 @@ async function loadPending(){
 
     listEl.innerHTML = "";
     data.forEach(item=>{
-      // ✅ 핵심: submissionId가 없으면 id를 사용
       const sid = item.submissionId || item.id || "";
       const placeLink = item.placeUrl
         ? `<a href="${esc(item.placeUrl)}" target="_blank" rel="noopener">열기</a>`
@@ -114,6 +120,7 @@ async function loadPending(){
         <div class="small">※ 승인 후 lat/lng는 restaurants 시트에서 직접 입력</div>
       `;
 
+      // ✅ 버튼 핸들링: 성공 시 전체 reload 대신 카드만 제거(체감속도↑)
       el.querySelectorAll("button").forEach(btn=>{
         btn.onclick = async ()=>{
           if (!sid){
@@ -121,10 +128,27 @@ async function loadPending(){
             return;
           }
 
+          // 버튼들 잠시 잠금
+          el.querySelectorAll("button").forEach(b=>b.disabled=true);
+
           const tier = btn.dataset.tier || "";
           const act = btn.dataset.act || "";
-          if (tier) await approve(adminKey, sid, tier);
-          else if (act === "reject") await reject(adminKey, sid);
+          let ok = false;
+
+          try{
+            if (tier) ok = await approve(adminKey, sid, tier);
+            else if (act === "reject") ok = await reject(adminKey, sid);
+          } finally {
+            if (ok) {
+              el.remove(); // ✅ 여기!
+              // 리스트가 비면 안내 표시
+              if (!listEl.querySelector(".item")){
+                listEl.innerHTML = "<div class='small'>대기목록이 없어요.</div>";
+              }
+            } else {
+              el.querySelectorAll("button").forEach(b=>b.disabled=false);
+            }
+          }
         };
       });
 
@@ -134,11 +158,13 @@ async function loadPending(){
   }catch(e){
     console.error(e);
     listEl.innerHTML = "<div class='small'>불러오기 실패: " + esc(e.message) + "</div>";
+  }finally{
+    setGlobalLoading(false);
   }
 }
 
 async function approve(adminKey, submissionId, tier){
-  if(!confirm(`승인할까?\nsubmissionId=${submissionId}\ntier=${tier}`)) return;
+  if(!confirm(`승인할까?\nsubmissionId=${submissionId}\ntier=${tier}`)) return false;
 
   try{
     const res = await fetch(API_URL, {
@@ -146,8 +172,8 @@ async function approve(adminKey, submissionId, tier){
       headers:{ "Content-Type":"application/json" },
       body: JSON.stringify({
         action:"approve",
-        adminKey,                 // ✅ 루트로 (Unauthorized 방지)
-        data:{ submissionId, tier } // ✅ submissionId 확실히
+        adminKey,
+        data:{ submissionId, tier }
       })
     });
 
@@ -155,10 +181,11 @@ async function approve(adminKey, submissionId, tier){
     if(!json.ok) throw new Error(json.error || "approve fail");
 
     alert("승인 완료!");
-    loadPending();
+    return true;
   }catch(e){
     console.error(e);
     alert("승인 실패: " + (e.message || ""));
+    return false;
   }
 }
 
@@ -171,8 +198,8 @@ async function reject(adminKey, submissionId){
       headers:{ "Content-Type":"application/json" },
       body: JSON.stringify({
         action:"reject",
-        adminKey,                    // ✅ 루트로
-        data:{ submissionId, reason } // ✅ submissionId 확실히
+        adminKey,
+        data:{ submissionId, reason }
       })
     });
 
@@ -180,10 +207,11 @@ async function reject(adminKey, submissionId){
     if(!json.ok) throw new Error(json.error || "reject fail");
 
     alert("거절 처리 완료!");
-    loadPending();
+    return true;
   }catch(e){
     console.error(e);
     alert("거절 실패: " + (e.message || ""));
+    return false;
   }
 }
 </script>
