@@ -12,7 +12,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Noto Sans KR",sans-serif;marg
 h1{font-size:18px;margin:0 0 6px;}
 .sub{font-size:13px;color:#666;margin:0 0 14px;line-height:1.4;}
 label{display:block;font-size:13px;color:#333;margin:12px 0 6px;font-weight:900;}
-.req{color:#03c75a;font-weight:900;margin-left:4px;}
 input, textarea{width:100%;box-sizing:border-box;padding:12px;border:1px solid #ddd;border-radius:12px;font-size:14px;background:#fff;}
 textarea{min-height:84px;resize:vertical;}
 .chips{display:flex;flex-wrap:wrap;gap:8px;}
@@ -22,89 +21,64 @@ textarea{min-height:84px;resize:vertical;}
 .row > *{flex:1;}
 .btn{margin-top:14px;width:100%;padding:14px;border:0;border-radius:14px;background:#03c75a;color:#fff;font-weight:900;font-size:15px;cursor:pointer;}
 .btn.secondary{background:#111;}
-.btn:disabled{opacity:.6;cursor:not-allowed;}
 .small{margin-top:10px;color:#777;font-size:12px;line-height:1.35;}
 
-/* ✅ 팝업(모달) */
-.modal{
-  position:fixed; inset:0;
-  background:rgba(0,0,0,.35);
-  z-index:10000;
-  display:none;
-  align-items:center;
-  justify-content:center;
+/* ===== ✅ 모달 팝업 ===== */
+.modalBack{
+  position:fixed; inset:0; z-index:99999;
+  background:rgba(0,0,0,.45);
+  display:none; align-items:center; justify-content:center;
   padding:18px;
 }
-.modal.show{ display:flex; }
-.modalCard{
-  width:min(360px, 92vw);
+.modalBack.show{ display:flex; }
+.modal{
+  width:min(420px, 100%);
   background:#fff;
-  border-radius:18px;
-  box-shadow:0 16px 40px rgba(0,0,0,.25);
-  padding:14px 14px 12px;
-  border:1px solid rgba(0,0,0,.06);
+  border-radius:16px;
+  box-shadow:0 18px 50px rgba(0,0,0,.28);
+  border:1px solid rgba(0,0,0,.10);
+  padding:16px;
 }
-.modalTitle{ font-weight:900; font-size:14px; color:#111; }
-.modalMsg{ margin-top:6px; font-size:12px; color:#444; line-height:1.35; white-space:pre-line; }
-.modalBtns{ display:flex; gap:8px; margin-top:12px; }
-.mbtn{
+.modalTitle{ font-weight:900; font-size:15px; color:#111; margin:0 0 6px; }
+.modalMsg{ font-size:13px; color:#444; line-height:1.5; margin:0; white-space:pre-line; }
+.modalBtns{ display:flex; gap:8px; margin-top:14px; }
+.modalBtn{
   flex:1;
-  padding:10px 12px;
+  padding:12px 12px;
   border-radius:12px;
   border:0;
   font-weight:900;
   cursor:pointer;
 }
-.mbtn.ok{ background:#03c75a; color:#fff; }
-.mbtn.dark{ background:#111; color:#fff; }
-.mbtn.ghost{ background:#f2f2f2; color:#111; }
-
-/* ✅ 상단 로딩바 */
-.progressTop{
-  position:fixed; left:0; top:0; right:0;
-  height:3px;
-  background:rgba(0,0,0,.06);
-  z-index:10001;
-  display:none;
+.modalBtn.ok{ background:#03c75a; color:#fff; }
+.modalBtn.dark{ background:#111; color:#fff; }
+.spinnerRow{ display:flex; align-items:center; gap:10px; margin-top:10px; }
+.spinner{
+  width:18px; height:18px; border-radius:999px;
+  border:3px solid rgba(0,0,0,.12);
+  border-top-color:#03c75a;
+  animation:spin 0.8s linear infinite;
 }
-.progressTop.show{ display:block; }
-.progressBar{
-  width:35%;
-  height:100%;
-  background:#03c75a;
-  transform: translateX(-120%);
-  animation: progressMove 1.0s infinite linear;
-}
-@keyframes progressMove {
-  0% { transform: translateX(-120%); }
-  100% { transform: translateX(320%); }
-}
+@keyframes spin{ to{ transform:rotate(360deg);} }
 </style>
 </head>
 <body>
-
-<!-- ✅ 로딩바 -->
-<div class="progressTop" id="progressTop"><div class="progressBar"></div></div>
-
 <div class="wrap">
   <div class="card">
     <h1>장항지구 맛집 제보</h1>
-    <p class="sub">
-      제보된 맛집은 관리자 확인 후 승인되면 지도에 표시돼요 🙂<br/>
-      가능하면 <b>네이버 플레이스 링크</b>를 넣어주면 좋아요.
-    </p>
+    <p class="sub">제보된 맛집은 관리자 확인 후 승인되면 지도에 표시돼요 🙂<br/>가능하면 <b>네이버 플레이스 링크</b>를 넣어주면 좋아요.</p>
 
-    <label>가게명 <span class="req">*</span></label>
-    <input id="name" placeholder="예) 대박각" maxlength="40" />
+    <label>가게명 *</label>
+    <input id="name" placeholder="예) 포폴로피자" maxlength="40" />
 
-    <label>주소 <span class="req">*</span></label>
+    <label>주소 *</label>
     <input id="address" placeholder="예) 고양시 일산동구 ..." maxlength="120" />
 
-    <label>카테고리 (복수 선택) <span class="req">*</span></label>
+    <label>카테고리 (복수 선택) *</label>
     <div id="cats" class="chips"></div>
 
-    <!-- ✅ 한줄소개 필수 -->
-    <label>한줄 소개 <span class="req">*</span></label>
+    <!-- ✅ 한줄소개 필수로 변경 -->
+    <label>한줄 소개 *</label>
     <textarea id="desc" placeholder="예) 양 많고 가성비 좋아요" maxlength="200"></textarea>
 
     <label>네이버 플레이스 링크 (선택)</label>
@@ -121,21 +95,29 @@ textarea{min-height:84px;resize:vertical;}
       </div>
     </div>
 
-    <button class="btn" id="btnSubmit" type="button">제보하기</button>
-    <button class="btn secondary" type="button" onclick="goBack()">지도로 돌아가기</button>
+    <button class="btn" id="btnSubmit" onclick="submitRestaurant()">제보하기</button>
+    <button class="btn secondary" onclick="goBack()">지도로 돌아가기</button>
 
     <div class="small">
-      * 평가없이 작성된 제보는 반려처리 됩니다.
+      * 평가없이 작성되 제보는 반려처리 됩니다.
     </div>
   </div>
 </div>
 
 <!-- ✅ 모달 -->
-<div class="modal" id="modal">
-  <div class="modalCard">
-    <div class="modalTitle" id="modalTitle">안내</div>
-    <div class="modalMsg" id="modalMsg"></div>
-    <div class="modalBtns" id="modalBtns"></div>
+<div class="modalBack" id="modalBack" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <div class="modalTitle" id="mTitle">안내</div>
+    <p class="modalMsg" id="mMsg"></p>
+
+    <div class="spinnerRow" id="mSpinRow" style="display:none;">
+      <div class="spinner"></div>
+      <div style="font-size:12px; color:#555;">요청 처리 중…</div>
+    </div>
+
+    <div class="modalBtns" id="mBtns">
+      <button class="modalBtn ok" id="mOkBtn" type="button">확인</button>
+    </div>
   </div>
 </div>
 
@@ -158,116 +140,141 @@ CATEGORY_MASTER.forEach(c=>{
   catsEl.appendChild(el);
 });
 
-/* ===== 모달/로딩 ===== */
-const modalEl = document.getElementById("modal");
-const modalTitleEl = document.getElementById("modalTitle");
-const modalMsgEl = document.getElementById("modalMsg");
-const modalBtnsEl = document.getElementById("modalBtns");
-const progressTopEl = document.getElementById("progressTop");
+/* ===== ✅ 모달 제어 ===== */
+const modalBack = document.getElementById("modalBack");
+const mTitle = document.getElementById("mTitle");
+const mMsg = document.getElementById("mMsg");
+const mSpinRow = document.getElementById("mSpinRow");
+const mBtns = document.getElementById("mBtns");
+const mOkBtn = document.getElementById("mOkBtn");
 
-function showProgress(on){ progressTopEl.classList.toggle("show", !!on); }
+let modalClosable = true;
+let okHandler = null;
 
-function hideModal(){ modalEl.classList.remove("show"); }
-modalEl.addEventListener("click", (e)=>{ if(e.target === modalEl) hideModal(); });
+function showModal({ title="안내", message="", loading=false, closable=true, okText="확인", onOk=null }){
+  modalClosable = closable;
+  okHandler = onOk;
 
-function showModal({ title="안내", message="", buttons=[] }){
-  modalTitleEl.textContent = title;
-  modalMsgEl.textContent = message;
-  modalBtnsEl.innerHTML = "";
+  mTitle.textContent = title;
+  mMsg.textContent = message;
 
-  const btns = buttons.length ? buttons : [{ text:"확인", kind:"ok", onClick: hideModal }];
-  btns.forEach(b=>{
-    const el = document.createElement("button");
-    el.className = "mbtn " + (b.kind || "ok");
-    el.textContent = b.text || "확인";
-    el.onclick = ()=>{ try{ b.onClick && b.onClick(); } finally { if (b.autoClose !== false) hideModal(); } };
-    modalBtnsEl.appendChild(el);
-  });
+  mSpinRow.style.display = loading ? "flex" : "none";
+  mBtns.style.display = loading ? "none" : "flex";
 
-  modalEl.classList.add("show");
+  mOkBtn.textContent = okText;
+
+  modalBack.classList.add("show");
+  modalBack.setAttribute("aria-hidden","false");
 }
+
+function closeModal(){
+  modalBack.classList.remove("show");
+  modalBack.setAttribute("aria-hidden","true");
+  okHandler = null;
+}
+
+mOkBtn.addEventListener("click", ()=>{
+  if (typeof okHandler === "function") okHandler();
+  closeModal();
+});
+
+modalBack.addEventListener("click", (e)=>{
+  if (!modalClosable) return;
+  if (e.target === modalBack) closeModal();
+});
+
+document.addEventListener("keydown", (e)=>{
+  if (e.key === "Escape" && modalBack.classList.contains("show") && modalClosable){
+    closeModal();
+  }
+});
 
 /* ===== 제출 ===== */
-const btnSubmitEl = document.getElementById("btnSubmit");
-btnSubmitEl.addEventListener("click", submitRestaurant);
-
-function getVal(id){ return document.getElementById(id).value.trim(); }
-function clearForm(){
-  document.getElementById("name").value = "";
-  document.getElementById("address").value = "";
-  document.getElementById("desc").value = "";
-  document.getElementById("placeUrl").value = "";
-  document.getElementById("nickname").value = "";
-  document.getElementById("tags").value = "";
-  selected.clear();
-  document.querySelectorAll(".chip").forEach(ch => ch.classList.remove("active"));
-}
-
 async function submitRestaurant(){
-  const name = getVal("name");
-  const address = getVal("address");
+  const btn = document.getElementById("btnSubmit");
+
+  const name = document.getElementById("name").value.trim();
+  const address = document.getElementById("address").value.trim();
   const category = [...selected].join(",");
 
   // ✅ 한줄소개 필수
-  const desc = getVal("desc");
+  const desc = document.getElementById("desc").value.trim();
 
-  const placeUrl = getVal("placeUrl");
-  const nickname = getVal("nickname");
-  const tags = getVal("tags");
+  const placeUrl = document.getElementById("placeUrl").value.trim();
+  const nickname = document.getElementById("nickname").value.trim();
+  const tags = document.getElementById("tags").value.trim();
 
-  if(!name) return showModal({ title:"확인", message:"가게명은 꼭 입력해주세요" });
-  if(!address) return showModal({ title:"확인", message:"주소는 꼭 입력해주세요" });
-  if(selected.size === 0) return showModal({ title:"확인", message:"카테고리를 최소 1개 선택해주세요" });
+  if(!name || !address){
+    return showModal({ title:"입력 확인", message:"가게명/주소는 꼭 입력해주세요", loading:false, closable:true });
+  }
+  if(selected.size === 0){
+    return showModal({ title:"입력 확인", message:"카테고리를 최소 1개 선택해주세요", loading:false, closable:true });
+  }
+  if(!desc){
+    return showModal({ title:"입력 확인", message:"한줄 소개는 꼭 입력해주세요", loading:false, closable:true });
+  }
 
-  // ✅ 한줄소개 필수 체크
-  if(!desc) return showModal({ title:"확인", message:"한줄 소개는 꼭 입력해줘!" });
-
-  // UI 잠금 + 로딩
-  btnSubmitEl.disabled = true;
-  showProgress(true);
-
+  // ✅ 로딩 팝업 (닫기 불가)
   showModal({
-    title: "등록 요청 중…",
-    message: "잠시만 기다려주세요.",
-    buttons: [{ text:"닫기", kind:"ghost", onClick: hideModal }]
+    title:"등록 요청 중",
+    message:"잠시만 기다려주세요 🙂",
+    loading:true,
+    closable:false
   });
+
+  btn.disabled = true;
 
   try{
     const res = await fetch(API_URL, {
       method:"POST",
       headers:{ "Content-Type":"application/json" },
       body: JSON.stringify({
-        action:"submit", // (GAS가 submitRestaurant만 받으면 submitRestaurant로 바꿔줘)
+        action:"submitRestaurant", // ✅ GAS와 통일
         data:{ name, address, category, tags, placeUrl, desc, nickname }
       })
     });
 
     const json = await res.json();
-    if(!json.ok) throw new Error(json.error || "unknown");
 
-    hideModal();
+    if(!json.ok){
+      // ✅ 실패 팝업
+      showModal({
+        title:"등록 실패",
+        message:`제보에 실패했어요.\n\n사유: ${json.error || "unknown"}`,
+        loading:false,
+        closable:true
+      });
+      return;
+    }
+
+    // ✅ 성공 팝업
     showModal({
-      title:"등록 완료",
-      message:"제보가 접수됐어요 🙂\n관리자 승인 후 지도에 표시됩니다.",
-      buttons: [
-        { text:"확인", kind:"ok", onClick: hideModal },
-        { text:"추가 제보", kind:"ghost", onClick: ()=>{ clearForm(); }, autoClose:true }
-      ]
+      title:"등록 완료 🎉",
+      message:"제보가 접수됐어요!\n관리자 승인 후 지도에 표시됩니다 🙂",
+      loading:false,
+      closable:true
     });
 
-    clearForm();
+    // 입력 초기화
+    document.getElementById("name").value = "";
+    document.getElementById("address").value = "";
+    document.getElementById("desc").value = "";
+    document.getElementById("placeUrl").value = "";
+    document.getElementById("nickname").value = "";
+    document.getElementById("tags").value = "";
+    selected.clear();
+    document.querySelectorAll(".chip").forEach(ch => ch.classList.remove("active"));
+
   }catch(e){
-    hideModal();
+    console.error(e);
     showModal({
       title:"등록 실패",
-      message:"제보 등록에 실패했어요.\n" + String(e.message || e),
-      buttons: [
-        { text:"확인", kind:"ok", onClick: hideModal }
-      ]
+      message:"네트워크 오류가 발생했어요.\n잠시 후 다시 시도해줘!",
+      loading:false,
+      closable:true
     });
   }finally{
-    btnSubmitEl.disabled = false;
-    showProgress(false);
+    btn.disabled = false;
   }
 }
 
