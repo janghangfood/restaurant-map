@@ -208,6 +208,37 @@ textarea.input{ min-height:70px; resize:none; }
   display:none;
 }
 .toast.show{ display:block; }
+
+ /* ✅ 모달 Fade + Scale 애니메이션 */
+.modalBack{
+  opacity: 0;
+  transition: opacity .18s ease;
+  will-change: opacity;
+}
+
+.modalBack.show{
+  opacity: 1;
+}
+
+.modal{
+  opacity: 0;
+  transform: scale(.96) translateY(10px);
+  transition: transform .22s cubic-bezier(.2,.8,.2,1), opacity .18s ease;
+  will-change: transform, opacity;
+}
+
+.modalBack.show .modal{
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+
+/* ✅ 접근성: 모션 줄이기 설정된 기기에서는 애니메이션 최소화 */
+@media (prefers-reduced-motion: reduce){
+  .modalBack, .modal{
+    transition: none !important;
+  }
+}
+ 
 </style>
 </head>
 
@@ -342,6 +373,11 @@ function showToast(msg, ms=1800){
   toastEl.classList.add("show");
   clearTimeout(showToast._t);
   showToast._t = setTimeout(()=>toastEl.classList.remove("show"), ms);
+}
+function closeModal(){
+  modalBack.classList.remove("show");
+  modalBack.setAttribute("aria-hidden","true");
+  okHandler = null;
 }
 
 function showModal({ title="안내", message="", buttons=[] }){
