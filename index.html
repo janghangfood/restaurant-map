@@ -157,7 +157,7 @@ textarea.input{ min-height:70px; resize:none; }
   100% { transform: translateX(320%); }
 }
 
-/* ✅ 팝업(모달) */
+/* ✅ 팝업(모달) (index 구조용) */
 .modal{
   position:fixed; inset:0;
   background:rgba(0,0,0,.35);
@@ -168,6 +168,7 @@ textarea.input{ min-height:70px; resize:none; }
   padding:18px;
 }
 .modal.show{ display:flex; }
+
 .modalCard{
   width:min(360px, 92vw);
   background:#fff;
@@ -209,36 +210,28 @@ textarea.input{ min-height:70px; resize:none; }
 }
 .toast.show{ display:block; }
 
- /* ✅ 모달 Fade + Scale 애니메이션 */
-.modalBack{
+/* ✅ 모달 Fade + Scale 애니메이션 (index.html 구조: .modal + .modalCard) */
+.modal{
   opacity: 0;
   transition: opacity .18s ease;
   will-change: opacity;
 }
-
-.modalBack.show{
+.modal.show{
   opacity: 1;
 }
-
-.modal{
+.modalCard{
   opacity: 0;
   transform: scale(.96) translateY(10px);
   transition: transform .22s cubic-bezier(.2,.8,.2,1), opacity .18s ease;
   will-change: transform, opacity;
 }
-
-.modalBack.show .modal{
+.modal.show .modalCard{
   opacity: 1;
   transform: scale(1) translateY(0);
 }
-
-/* ✅ 접근성: 모션 줄이기 설정된 기기에서는 애니메이션 최소화 */
 @media (prefers-reduced-motion: reduce){
-  .modalBack, .modal{
-    transition: none !important;
-  }
+  .modal, .modalCard{ transition:none !important; }
 }
- 
 </style>
 </head>
 
@@ -360,7 +353,7 @@ let myCircle = null;
 let watchId = null;
 
 /* =========================
-   ✅ 팝업/토스트 유틸
+   ✅ 팝업/토스트 유틸 (index.html용)
 ========================= */
 const modalEl = document.getElementById("modal");
 const modalTitleEl = document.getElementById("modalTitle");
@@ -374,38 +367,39 @@ function showToast(msg, ms=1800){
   clearTimeout(showToast._t);
   showToast._t = setTimeout(()=>toastEl.classList.remove("show"), ms);
 }
-function closeModal(){
-  modalBack.classList.remove("show");
-  modalBack.setAttribute("aria-hidden","true");
-  okHandler = null;
-}
+
+function hideModal(){ modalEl.classList.remove("show"); }
 
 function showModal({ title="안내", message="", buttons=[] }){
   modalTitleEl.textContent = title;
   modalMsgEl.textContent = message;
   modalBtnsEl.innerHTML = "";
 
-  const btns = buttons.length ? buttons : [{ text:"확인", kind:"ok", onClick: hideModal }];
+  const btns = buttons.length
+    ? buttons
+    : [{ text:"확인", kind:"ok", onClick: ()=>{} }];
+
   btns.forEach(b=>{
     const el = document.createElement("button");
     el.className = "mbtn " + (b.kind || "ok");
     el.textContent = b.text || "확인";
-    el.onclick = ()=>{ try{ b.onClick && b.onClick(); } finally { if (b.autoClose !== false) hideModal(); } };
+    el.onclick = ()=>{
+      try{ b.onClick && b.onClick(); }
+      finally{ if (b.autoClose !== false) hideModal(); }
+    };
     modalBtnsEl.appendChild(el);
   });
 
   modalEl.classList.add("show");
 }
-function hideModal(){ modalEl.classList.remove("show"); }
+
+// 바깥 클릭하면 닫기
 modalEl.addEventListener("click", (e)=>{ if (e.target === modalEl) hideModal(); });
 
-function showBusyModal(message){
-  showModal({
-    title: "처리 중…",
-    message: message || "요청 중입니다. 잠시만 기다려주세요.",
-    buttons: [{ text:"닫기", kind:"ghost", onClick: hideModal }]
-  });
-}
+// ESC로 닫기
+document.addEventListener("keydown", (e)=>{
+  if (e.key === "Escape" && modalEl.classList.contains("show")) hideModal();
+});
 
 /* =========================
    deviceId (IP 대신 현실적인 중복 방지 키)
@@ -940,7 +934,7 @@ function renderComments(list){
 /* =========================
    ✅ 댓글: 빠른 UX (캐시 선표시 + 최신 갱신 + 로딩바 + 중복요청 취소)
 ========================= */
-const COMMENT_TTL_MS = 30_000; // 30초 캐시(원하면 5~10초로 줄여도 됨)
+const COMMENT_TTL_MS = 30_000; // 30초 캐시
 const commentMem = new Map();  // restaurantId -> { ts, data }
 let commentAbort = null;
 
@@ -1009,7 +1003,6 @@ async function loadCommentsSmart(restaurantId){
     renderComments(list);
     cmtStatusEl.textContent = "";
   }catch(e){
-    // 취소는 조용히
     if (e.name === "AbortError") return;
     cmtStatusEl.textContent = "댓글을 불러오지 못했어요.";
     if (!cached) showToast("댓글 로드 실패");
@@ -1038,7 +1031,7 @@ async function addCommentFromUI(){
   showModal({
     title: "등록 요청 중…",
     message: "잠시만 기다려주세요.",
-    buttons: [{ text:"닫기", kind:"ghost", onClick: hideModal }]
+    buttons: [{ text:"닫기", kind:"ghost", onClick: ()=>{} }]
   });
 
   try{
@@ -1073,7 +1066,7 @@ async function addCommentFromUI(){
     showModal({
       title: "등록 완료",
       message: "댓글이 등록됐어요 🙂",
-      buttons: [{ text:"확인", kind:"ok", onClick: hideModal }]
+      buttons: [{ text:"확인", kind:"ok", onClick: ()=>{} }]
     });
 
     await loadCommentsSmart(selected.id);
@@ -1082,9 +1075,7 @@ async function addCommentFromUI(){
     showModal({
       title: "등록 실패",
       message: String(e.message || e || "unknown"),
-      buttons: [
-        { text:"확인", kind:"ok", onClick: hideModal }
-      ]
+      buttons: [{ text:"확인", kind:"ok", onClick: ()=>{} }]
     });
   }finally{
     btnAddCommentEl.disabled = false;
@@ -1105,11 +1096,14 @@ function openNaverMap(){
   const name = encodeURIComponent(selected.name || "");
   window.open("https://map.naver.com/v5/search/" + name, "_blank");
 }
+
+/* =========================
+   ✅ 첫 방문 안내 팝업 (1회만)
+========================= */
 (function showIntroOnce(){
   const KEY = "jh_food_intro_seen_v1";
   if (localStorage.getItem(KEY)) return;
 
-  // 👉 이미 쓰고 있는 showModal 함수 재사용
   showModal({
     title: "🍽️ 장항지구 맛집지도 안내",
     message:
@@ -1127,14 +1121,12 @@ function openNaverMap(){
 
 광고 없이
 장항지구 입주민이 제보한 가게만 표시됩니다.`,
-    loading: false,
-    closable: true,
-    okText: "확인",
-    onOk: () => {
-      localStorage.setItem(KEY, "1");
-    }
+    buttons: [
+      { text:"확인", kind:"ok", onClick: ()=>localStorage.setItem(KEY,"1") }
+    ]
   });
 })();
+
 /* =========================
    시작
 ========================= */
