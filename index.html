@@ -1069,7 +1069,36 @@ function openNaverMap(){
   const name = encodeURIComponent(selected.name || "");
   window.open("https://map.naver.com/v5/search/" + name, "_blank");
 }
+(function showIntroOnce(){
+  const KEY = "jh_food_intro_seen_v1";
+  if (localStorage.getItem(KEY)) return;
 
+  // 👉 이미 쓰고 있는 showModal 함수 재사용
+  showModal({
+    title: "🍽️ 장항지구 맛집지도 안내",
+    message:
+`이 지도는
+장항지구 입주민이 직접 제보하고 만들어가는 맛집 지도입니다.
+
+맛집은 아래 두 단계로 구분됩니다.
+
+① 제보맛집
+👉 입주민이 직접 제보한 맛집
+
+② 인증맛집 👑
+👉 현재도 유명하거나
+👉 댓글과 평점이 좋아 자동 승급된 맛집
+
+광고 없이
+장항지구 입주민이 제보한 가게만 표시됩니다.`,
+    loading: false,
+    closable: true,
+    okText: "확인",
+    onOk: () => {
+      localStorage.setItem(KEY, "1");
+    }
+  });
+})();
 /* =========================
    시작
 ========================= */
